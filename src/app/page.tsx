@@ -1,6 +1,21 @@
+'use client';
 import Image from "next/image";
+import { useState, useEffect } from 'react';
+import { carouselData } from '@/app/carousel'; //Para mas Imagenes importar el Carousel.ts
 
 export default function Home() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentIndex((prevIndex) => 
+        prevIndex === carouselData.images.length - 1 ? 0 : prevIndex + 1
+      );
+    }, 3000);
+
+    return () => clearInterval(timer);
+  }, []);
+
   return (
     <main className="flex flex-col">
       <section 
@@ -25,6 +40,46 @@ export default function Home() {
           </div>
         </div>
 
+       <div className="container flex flex-col gap-4 ml-[82px] ">
+        <div> <h1 className="text-[#1D1C19] text-[48px] font-bold">Fresh spaces, clear minds.</h1> </div>
+
+        <div>
+          <span>Get a personalized solution to your spaces, create unique pieces for you and your home.</span>
+          <span>Deal with professionals who care.</span>
+        </div>
+
+        <div>
+        <button className='bg-[#1D1C19] text-[#fff] px-6 py-[10px] flex items-center gap-2'>
+              SET AN APPOINTMENT
+              <span> 
+                <Image
+                  src='/icons/Vector.svg'
+                  width={14} 
+                  height={14}
+                  alt="Lemon"
+                />
+              </span>
+            </button>
+        </div>
+        <div className="relative w-[562px] h-[334px] overflow-hidden">
+          {carouselData.images.map((image, index) => (
+            <div
+              key={image.id}
+              className={`absolute w-full h-full transition-opacity duration-1000 ease-in-out
+                ${index === currentIndex ? 'opacity-100' : 'opacity-0'}`}
+            >
+              <Image
+                src={image.src}
+                alt={image.alt}
+                fill
+                className="object-cover"
+                priority={index === 0}
+              />
+            </div>
+          ))}
+        </div>
+
+       </div>
       </section>
 
       {/* Sección para contenido adicional */}
