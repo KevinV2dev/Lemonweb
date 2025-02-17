@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@import 'react-datepicker/dist/react-datepicker.css';
+
 * {
   box-sizing: border-box;
   padding: 0;
@@ -35,5 +37,26 @@ body {
 * {
   scrollbar-width: thin;
   scrollbar-color: #1D1C19 transparent;
+}
+
+/* Estilos personalizados para el datepicker */
+.react-datepicker-wrapper {
+  width: 100%;
+}
+
+.react-datepicker__input-container input {
+  @apply w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black;
+}
+
+.react-datepicker {
+  @apply border border-gray-200 bg-white shadow-lg;
+}
+
+.react-datepicker__header {
+  @apply bg-gray-50 border-b border-gray-200;
+}
+
+.react-datepicker__day--selected {
+  @apply bg-black text-white;
 }
 

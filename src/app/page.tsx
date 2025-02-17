@@ -1,10 +1,12 @@
 'use client';
 import Image from "next/image";
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { carouselData } from '@/app/carousel'; //Para mas Imagenes importar el Carousel.ts
 
 export default function Home() {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const router = useRouter();
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -49,7 +51,7 @@ export default function Home() {
         </div>
 
         <div>
-        <button className='bg-[#1D1C19] text-[#fff] px-6 py-[10px] flex items-center gap-2'>
+        <button onClick={() => router.push('/appointment')}  className='bg-[#1D1C19] text-[#fff] px-6 py-[10px] flex items-center gap-2'>
               SET AN APPOINTMENT
               <span> 
                 <Image

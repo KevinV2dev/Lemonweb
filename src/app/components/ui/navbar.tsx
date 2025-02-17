@@ -3,8 +3,11 @@
 
 import { NavLink } from '@/app/components/ui/NavLink';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 export const Navbar = () => {
+  const router = useRouter();
+
   const links = [
     { href: '/', label: 'HOME', exact: true },
     { href: '/catalog', label: 'CATALOG' },
@@ -56,9 +59,12 @@ export const Navbar = () => {
               </span>
             </button>
 
-            <button className='bg-[#1D1C19] text-[#fff] px-6 py-[10px] flex items-center gap-2'>
+            <button 
+              onClick={() => router.push('/appointment')} 
+              className='bg-[#1D1C19] text-[#fff] px-6 py-[10px] flex items-center gap-2'
+            >
               SET AN APPOINTMENT
-              <span> 
+              <span>
                 <Image
                   src='/icons/Vector.svg'
                   width={14} 
