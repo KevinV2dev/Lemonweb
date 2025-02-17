@@ -7,6 +7,7 @@ import { createBrowserClient } from '@/supabase/client'
 import { toast } from 'react-hot-toast'
 import { useState } from 'react'
 import { EditAppointmentModal } from './edit-appointment-modal'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 
 interface AppointmentsTableProps {
   appointments: Appointment[]
@@ -19,21 +20,44 @@ export function AppointmentsTable({ appointments: initialAppointments }: Appoint
   const supabase = createBrowserClient()
 
   const handleDelete = async (id: string) => {
-    if (!confirm('¿Estás seguro de eliminar esta cita?')) return
-
     try {
-      const { error } = await supabase
+      const supabase = createClientComponentClient()
+      
+      // Verificar primero si el usuario es admin
+      const { data: adminCheck, error: adminError } = await supabase
+        .from('admins')
+        .select('id')
+        .single()
+
+      if (adminError) {
+        toast.error('No tienes permisos para eliminar citas')
+        console.error('Error de permisos:', adminError)
+        return
+      }
+      
+      // Realizar la eliminación en la base de datos
+      const { error: deleteError } = await supabase
         .from('appointments')
         .delete()
         .eq('id', id)
 
-      if (error) throw error
+      if (deleteError) {
+        if (deleteError.code === '42501') { // Código de error de permisos de Postgres
+          toast.error('No tienes permisos para eliminar citas')
+        } else {
+          toast.error('Error al eliminar la cita')
+        }
+        console.error('Error al eliminar:', deleteError)
+        return
+      }
 
-      setAppointments(appointments.filter(app => app.id !== id))
+      // Solo actualizar la UI si la eliminación fue exitosa
+      setAppointments(appointments.filter(appointment => appointment.id !== id))
       toast.success('Cita eliminada correctamente')
+      
     } catch (error) {
-      console.error('Error:', error)
-      toast.error('Error al eliminar la cita')
+      toast.error('Error inesperado al eliminar la cita')
+      console.error('Error al eliminar la cita:', error)
     }
   }
 

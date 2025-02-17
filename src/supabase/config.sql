@@ -82,6 +82,17 @@ WITH CHECK (
   )
 );
 
+-- Agregar política para permitir que los admins puedan eliminar citas
+CREATE POLICY "Solo admins pueden eliminar citas"
+ON appointments FOR DELETE
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM admins
+    WHERE admins.email = auth.email()
+  )
+);
+
 -- Asegurarnos que el status solo pueda tener los valores permitidos
 ALTER TABLE appointments 
   DROP CONSTRAINT IF EXISTS appointments_status_check,

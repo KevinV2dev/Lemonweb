@@ -4,7 +4,6 @@ import { Calendar, Package, Settings, LayoutDashboard, LogOut, BookOpen, Users }
 import { motion } from 'framer-motion'
 import { createBrowserClient } from '@/supabase/client'
 import { useRouter } from 'next/navigation'
-
 interface SidebarProps {
   currentSection: string
   onSectionChange: (section: string) => void
