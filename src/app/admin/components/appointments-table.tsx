@@ -15,6 +15,7 @@ interface AppointmentsTableProps {
 export function AppointmentsTable({ appointments: initialAppointments }: AppointmentsTableProps) {
   const [appointments, setAppointments] = useState(initialAppointments)
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const supabase = createBrowserClient()
 
   const handleDelete = async (id: string) => {
@@ -57,6 +58,12 @@ export function AppointmentsTable({ appointments: initialAppointments }: Appoint
 
   const handleEdit = (appointment: Appointment) => {
     setEditingAppointment(appointment)
+    setIsModalOpen(true)
+  }
+
+  const handleCloseModal = () => {
+    setEditingAppointment(null)
+    setIsModalOpen(false)
   }
 
   const handleUpdateAppointment = (updatedAppointment: Appointment) => {
@@ -143,8 +150,12 @@ export function AppointmentsTable({ appointments: initialAppointments }: Appoint
       {editingAppointment && (
         <EditAppointmentModal
           appointment={editingAppointment}
-          onClose={() => setEditingAppointment(null)}
-          onUpdate={handleUpdateAppointment}
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          onUpdate={(updatedAppointment) => {
+            handleUpdateAppointment(updatedAppointment)
+            setIsModalOpen(false)
+          }}
         />
       )}
     </>
