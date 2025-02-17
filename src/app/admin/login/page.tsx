@@ -1,19 +1,22 @@
 'use client'
 
+import { Suspense } from 'react'
 import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createBrowserClient } from '@/supabase/client'
 import { LoginForm } from '../components/login-form'
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const supabase = createBrowserClient()
 
   useEffect(() => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
-        router.push('/admin')
+        const returnTo = searchParams.get('returnTo') || '/admin'
+        router.push(returnTo)
       }
     }
 
@@ -23,12 +26,13 @@ export default function LoginPage() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN') {
-        router.push('/admin')
+        const returnTo = searchParams.get('returnTo') || '/admin'
+        router.push(returnTo)
       }
     })
 
     return () => subscription.unsubscribe()
-  }, [router, supabase.auth])
+  }, [router, searchParams, supabase.auth])
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -44,5 +48,17 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   )
 } 
