@@ -90,9 +90,6 @@ export function AppointmentsTable({ appointments: initialAppointments }: Appoint
                 Fecha
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Servicio
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Estado
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -111,9 +108,6 @@ export function AppointmentsTable({ appointments: initialAppointments }: Appoint
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   {format(new Date(appointment.appointment_date), "PPpp", { locale: es })}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {appointment.service}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <select
