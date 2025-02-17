@@ -9,17 +9,25 @@ export async function createAppointment(appointmentData: {
   address: string
   notes?: string
 }) {
-  const { data, error } = await supabase
-    .from('appointments')
-    .insert([
-      {
-        ...appointmentData,
-        status: 'pending'
-      }
-    ])
-    .select()
-    .single()
+  try {
+    const { data, error } = await supabase
+      .from('appointments')
+      .insert([
+        {
+          ...appointmentData,
+          status: 'pending'
+        }
+      ])
+      .select()
+      .single()
 
-  if (error) throw error
-  return data
+    if (error) {
+      console.error('Error detallado:', error)
+      throw error
+    }
+    return data
+  } catch (error) {
+    console.error('Error al crear la cita:', error)
+    throw error
+  }
 } 

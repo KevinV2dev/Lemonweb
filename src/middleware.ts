@@ -10,19 +10,14 @@ export async function middleware(req: NextRequest) {
     data: { session },
   } = await supabase.auth.getSession()
 
-  // Si no hay sesión y está intentando acceder a /admin
-  if (!session && req.nextUrl.pathname.startsWith('/admin')) {
-    // Permitir acceso solo a la página de login
-    if (req.nextUrl.pathname === '/admin/login') {
-      return res
-    }
-    // Redirigir a login para cualquier otra ruta de admin
-    return NextResponse.redirect(new URL('/admin/login', req.url))
-  }
-
-  // Si hay sesión y está en la página de login, redirigir al dashboard
+  // Si está en /admin/login y tiene sesión, redirigir a /admin
   if (session && req.nextUrl.pathname === '/admin/login') {
     return NextResponse.redirect(new URL('/admin', req.url))
+  }
+
+  // Si está en cualquier ruta de admin (excepto login) y no tiene sesión, redirigir a login
+  if (!session && req.nextUrl.pathname.startsWith('/admin') && req.nextUrl.pathname !== '/admin/login') {
+    return NextResponse.redirect(new URL('/admin/login', req.url))
   }
 
   return res
