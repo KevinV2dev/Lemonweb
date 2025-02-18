@@ -438,6 +438,7 @@ export default function AdminPage() {
                                 <SortableHeader column="appointment_date" label="Date" />
                                 <SortableHeader column="preferred_contact_time" label="Contact" />
                                 <SortableHeader column="status" label="Status" />
+                                <SortableHeader column="created_at" label="Created" />
                                 <th className="relative py-3.5 pl-3 pr-4 sm:pr-6">
                                   <span className="sr-only">Acciones</span>
                                 </th>
@@ -468,6 +469,9 @@ export default function AdminPage() {
                                     <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${getStatusColor(appointment.status)}`}>
                                       {getStatusText(appointment.status)}
                                     </span>
+                                  </td>
+                                  <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                    {format(new Date(appointment.created_at), "d MMM yyyy HH:mm", { locale: es })}
                                   </td>
                                   <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                                     <motion.button

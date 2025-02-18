@@ -19,24 +19,15 @@ body {
   overflow-x: hidden;
 }
 
-/* Personalización de la barra de scroll */
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #1D1C19;
-  border-radius: 3px;
-}
-
-/* Para Firefox */
+/* Ocultar scrollbar pero mantener funcionalidad */
 * {
-  scrollbar-width: thin;
-  scrollbar-color: #1D1C19 transparent;
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* Ocultar scrollbar para Chrome, Safari y Opera */
+*::-webkit-scrollbar {
+  display: none;
 }
 
 /* Estilos personalizados para el datepicker */
