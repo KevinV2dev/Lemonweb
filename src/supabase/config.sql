@@ -78,3 +78,23 @@ USING (
 INSERT INTO admins (email)
 VALUES ('vegaskevin46@gmail.com')
 ON CONFLICT (email) DO NOTHING;
+
+-- Modificar la tabla appointments para usar un ID secuencial simple
+ALTER TABLE appointments 
+DROP COLUMN IF EXISTS appointment_id;
+
+-- Crear una secuencia para el ID
+CREATE SEQUENCE IF NOT EXISTS appointment_id_seq START 1;
+
+-- Añadir la columna appointment_id con formato de 4 dígitos
+ALTER TABLE appointments 
+ADD COLUMN IF NOT EXISTS appointment_id TEXT 
+DEFAULT LPAD(nextval('appointment_id_seq')::TEXT, 4, '0');
+
+-- Asegurarnos que el appointment_id sea único
+ALTER TABLE appointments 
+ADD CONSTRAINT unique_appointment_id UNIQUE (appointment_id);
+
+-- Eliminar cualquier constraint único en appointment_date si existe
+ALTER TABLE appointments 
+DROP CONSTRAINT IF EXISTS unique_appointment_date;

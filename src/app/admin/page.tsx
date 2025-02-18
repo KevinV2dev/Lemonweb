@@ -11,6 +11,7 @@ import { Sidebar } from './components/sidebar'
 import { Plus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@/supabase/client'
+import React from 'react'
 
 interface Appointment {
   id: string
@@ -23,6 +24,7 @@ interface Appointment {
   address: string
   notes?: string
   created_at: string
+  appointment_id: string
 }
 
 export default function AdminPage() {
@@ -35,6 +37,13 @@ export default function AdminPage() {
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [currentSection, setCurrentSection] = useState('appointments')
+  const [sortConfig, setSortConfig] = useState<{
+    key: keyof Appointment | null;
+    direction: 'asc' | 'desc';
+  }>({
+    key: null,
+    direction: 'asc'
+  });
 
   useEffect(() => {
     const checkSession = async () => {
@@ -52,11 +61,24 @@ export default function AdminPage() {
   }, [])
 
   useEffect(() => {
-    const filtered = appointments.filter(appointment => 
-      appointment.client_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      appointment.client_email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      appointment.phone.includes(searchTerm)
-    )
+    const filtered = appointments.filter(appointment => {
+      const searchLower = searchTerm.toLowerCase()
+      return (
+        appointment.client_name.toLowerCase().includes(searchLower) ||
+        appointment.client_email.toLowerCase().includes(searchLower) ||
+        appointment.phone.includes(searchLower) ||
+        format(new Date(appointment.appointment_date), "d 'de' MMMM 'de' yyyy", { locale: es })
+          .toLowerCase()
+          .includes(searchLower) ||
+        getPreferredContactTime(appointment.preferred_contact_time)
+          .toLowerCase()
+          .includes(searchLower) ||
+        getStatusText(appointment.status)
+          .toLowerCase()
+          .includes(searchLower) ||
+        appointment.appointment_id.toLowerCase().includes(searchLower)
+      )
+    })
     setFilteredAppointments(filtered)
   }, [searchTerm, appointments])
 
@@ -122,6 +144,85 @@ export default function AdminPage() {
         return status
     }
   }
+
+  const getPreferredContactTime = (time: string) => {
+    switch (time) {
+      case 'morning':
+        return 'Morning'
+      case 'afternoon':
+        return 'Afternoon'
+      case 'evening':
+        return 'Evening'
+      default:
+        return time
+    }
+  }
+
+  // Función para manejar el ordenamiento
+  const handleSort = (key: keyof Appointment) => {
+    setSortConfig((currentSort) => {
+      if (currentSort.key === key) {
+        return {
+          key,
+          direction: currentSort.direction === 'asc' ? 'desc' : 'asc'
+        };
+      }
+      return {
+        key,
+        direction: 'asc'
+      };
+    });
+  };
+
+  // Función para ordenar las citas
+  const sortedAppointments = React.useMemo(() => {
+    const sorted = [...filteredAppointments];
+    if (!sortConfig.key) return sorted;  // Si no hay key de ordenamiento, retornar el array original
+
+    return sorted.sort((a, b) => {
+      const key = sortConfig.key as keyof Appointment;
+      
+      // Manejo especial para fechas
+      if (key === 'appointment_date') {
+        return sortConfig.direction === 'asc'
+          ? new Date(a.appointment_date).getTime() - new Date(b.appointment_date).getTime()
+          : new Date(b.appointment_date).getTime() - new Date(a.appointment_date).getTime();
+      }
+
+      // Manejo especial para appointment_id (comparación numérica)
+      if (key === 'appointment_id') {
+        const aNum = parseInt(a.appointment_id);
+        const bNum = parseInt(b.appointment_id);
+        return sortConfig.direction === 'asc' ? aNum - bNum : bNum - aNum;
+      }
+
+      // Para el resto de campos
+      const aValue = String(a[key]);
+      const bValue = String(b[key]);
+      
+      if (sortConfig.direction === 'asc') {
+        return aValue.localeCompare(bValue);
+      }
+      return bValue.localeCompare(aValue);
+    });
+  }, [filteredAppointments, sortConfig]);
+
+  // Componente para el encabezado de columna ordenable
+  const SortableHeader = ({ column, label }: { column: keyof Appointment; label: string }) => (
+    <th 
+      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-50"
+      onClick={() => handleSort(column)}
+    >
+      <div className="flex items-center gap-2">
+        {label}
+        {sortConfig.key === column && (
+          <span className="text-xs">
+            {sortConfig.direction === 'asc' ? '↑' : '↓'}
+          </span>
+        )}
+      </div>
+    </th>
+  );
 
   const renderContent = () => {
     switch (currentSection) {
@@ -330,20 +431,24 @@ export default function AdminPage() {
                           <table className="min-w-full divide-y divide-gray-300">
                             <thead>
                               <tr>
-                                <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Cliente</th>
-                                <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Email</th>
-                                <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Teléfono</th>
-                                <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Fecha</th>
-                                <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Contacto</th>
-                                <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Estado</th>
+                                <SortableHeader column="appointment_id" label="ID" />
+                                <SortableHeader column="client_name" label="Client" />
+                                <SortableHeader column="client_email" label="Email" />
+                                <SortableHeader column="phone" label="Phone" />
+                                <SortableHeader column="appointment_date" label="Date" />
+                                <SortableHeader column="preferred_contact_time" label="Contact" />
+                                <SortableHeader column="status" label="Status" />
                                 <th className="relative py-3.5 pl-3 pr-4 sm:pr-6">
                                   <span className="sr-only">Acciones</span>
                                 </th>
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200 bg-white">
-                              {filteredAppointments.map((appointment) => (
+                              {sortedAppointments.map((appointment) => (
                                 <tr key={appointment.id} className="hover:bg-gray-50">
+                                  <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                    {appointment.appointment_id}
+                                  </td>
                                   <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-900">
                                     {appointment.client_name}
                                   </td>
@@ -357,8 +462,7 @@ export default function AdminPage() {
                                     {format(new Date(appointment.appointment_date), "d 'de' MMMM 'de' yyyy 'a las' HH:mm", { locale: es })}
                                   </td>
                                   <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                    {appointment.preferred_contact_time === 'morning' ? 'Mañana' :
-                                     appointment.preferred_contact_time === 'afternoon' ? 'Tarde' : 'Noche'}
+                                    {getPreferredContactTime(appointment.preferred_contact_time)}
                                   </td>
                                   <td className="whitespace-nowrap px-3 py-4 text-sm">
                                     <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${getStatusColor(appointment.status)}`}>

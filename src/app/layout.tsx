@@ -3,7 +3,6 @@ import MainLayout from '@/app/components/layouts/MainLayout'
 import "./globals.css";
 import { Saira } from 'next/font/google';
 import { Providers } from './providers/providers'
-import { Toaster } from "./components/ui/toaster"
 
 const saira = Saira({ 
   subsets: ['latin'],

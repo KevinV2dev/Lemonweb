@@ -1,5 +1,6 @@
 export interface Appointment {
   id: string;
+  appointment_id: string;
   client_name: string;
   client_email: string;
   phone: string;

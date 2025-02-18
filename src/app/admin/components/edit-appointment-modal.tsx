@@ -178,13 +178,21 @@ export function EditAppointmentModal({
             </select>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Fecha y hora
+          <div className="mt-4">
+            <label htmlFor="appointment_date" className="block text-sm font-medium text-gray-700">
+              Fecha
             </label>
             <CustomDatePicker
-              value={new Date(formData.appointment_date)}
-              onChange={(date) => date && setFormData({...formData, appointment_date: date.toISOString()})}
+              selected={new Date(formData.appointment_date)}
+              onChange={(date) => {
+                if (date) {
+                  // Mantener la hora actual al cambiar la fecha
+                  const currentDate = new Date(formData.appointment_date)
+                  date.setHours(currentDate.getHours())
+                  date.setMinutes(currentDate.getMinutes())
+                  setFormData({...formData, appointment_date: date.toISOString()})
+                }
+              }}
               error={undefined}
             />
           </div>
