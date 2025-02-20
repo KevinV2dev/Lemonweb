@@ -12,6 +12,9 @@ import { Plus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@/supabase/client'
 import React from 'react'
+import { ProductList } from './components/products/ProductList'
+import { ProductModal } from './components/products/ProductModal'
+import { Product } from '@/supabase/products'
 
 interface Appointment {
   id: string
@@ -44,6 +47,8 @@ export default function AdminPage() {
     key: null,
     direction: 'asc'
   });
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | undefined>();
 
   useEffect(() => {
     const checkSession = async () => {
@@ -517,14 +522,38 @@ export default function AdminPage() {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 flex items-center"
+                onClick={() => {
+                  setSelectedProduct(undefined);
+                  setIsProductModalOpen(true);
+                }}
               >
                 <Plus className="w-5 h-5 mr-2" />
                 Add Product
               </motion.button>
             </div>
-            <div className="bg-white rounded-lg shadow p-6">
-              <p className="text-gray-500 text-center">No products added yet</p>
+
+            <div className="bg-white rounded-lg shadow">
+              <ProductList 
+                onEdit={(product) => {
+                  setSelectedProduct(product);
+                  setIsProductModalOpen(true);
+                }}
+              />
             </div>
+
+            <ProductModal
+              isOpen={isProductModalOpen}
+              onClose={() => {
+                setIsProductModalOpen(false);
+                setSelectedProduct(undefined);
+              }}
+              product={selectedProduct}
+              onSave={(product) => {
+                // TODO: Implementar lógica de guardado/actualización
+                setIsProductModalOpen(false);
+                setSelectedProduct(undefined);
+              }}
+            />
           </div>
         )
 
