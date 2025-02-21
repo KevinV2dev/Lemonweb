@@ -1,7 +1,8 @@
 'use client';
 
 import { Search } from 'lucide-react';
-import { Category } from '@/supabase/products';
+import { productService } from '@/supabase/products';
+import type { Category } from '@/types';
 
 interface SearchAndFiltersProps {
   categories: Category[];

@@ -1,64 +1,32 @@
 import { createClient } from '@supabase/supabase-js';
+import type { Product, Category, ProductImage, ProductColor, ProductMaterial, ProductAttribute } from '@/types';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
-export interface Product {
-  id: number;
-  name: string;
-  slug: string;
-  description: string;
-  category_id: number;
-  main_image: string;
-  active: boolean;
-  created_at: string;
-  updated_at: string;
-  category?: Category;
-  additional_images?: ProductImage[];
-  colors?: ProductColor[];
-  materials?: ProductMaterial[];
-  attributes?: ProductAttribute[];
-}
+export async function getProduct(slug: string): Promise<Product> {
+  const { data: product, error } = await supabase
+    .from('products')
+    .select(`
+      *,
+      category:category_id (
+        id,
+        name,
+        slug,
+        parent_id,
+        type,
+        created_at,
+        display_order,
+        parent:categories(*)
+      )
+    `)
+    .eq('slug', slug)
+    .single();
 
-export interface Category {
-  id: number;
-  name: string;
-  slug: string;
-  created_at: string;
-  display_order: number;
-}
-
-export interface ProductImage {
-  id: number;
-  product_id: number;
-  image_url: string;
-  display_order: number;
-  created_at: string;
-}
-
-export interface ProductColor {
-  id: number;
-  name: string;
-  hex_code: string | null;
-  description: string | null;
-  created_at: string;
-}
-
-export interface ProductMaterial {
-  id: number;
-  name: string;
-  description: string | null;
-  created_at: string;
-}
-
-export interface ProductAttribute {
-  id: number;
-  product_id: number;
-  name: string;
-  value: string;
-  created_at: string;
+  if (error) throw error;
+  return product;
 }
 
 export const productService = {
@@ -202,7 +170,7 @@ export const productService = {
   async createCategory(categoryData: { name: string; slug: string; }) {
     const { data, error } = await supabase
       .from('categories')
-      .insert([categoryData])
+      .insert([{ ...categoryData, type: 'category' }])
       .select()
       .single();
 

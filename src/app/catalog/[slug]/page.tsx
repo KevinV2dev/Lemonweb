@@ -3,8 +3,12 @@
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { Product, productService } from '@/supabase/products';
+import { productService } from '@/supabase/products';
 import { toast } from 'react-hot-toast';
+import React from 'react';
+import { Category } from '@/types';
+import { getProduct } from '@/supabase/products';
+import type { Product } from '@/types';
 
 interface ProductPageProps {
   params: {
@@ -88,14 +92,16 @@ export default function ProductPage({ params }: ProductPageProps) {
               {product.name}
             </h1>
             <div className="space-x-2">
-              <span className="text-gray-600">
-                {product.category?.name}
-              </span>
-              {product.category?.parent_id && (
+              {product.category?.name && (
+                <span className="text-gray-600">
+                  {product.category.name}
+                </span>
+              )}
+              {product.category?.parent?.name && (
                 <>
                   <span className="text-gray-400">•</span>
                   <span className="text-gray-600">
-                    {product.category?.name}
+                    {product.category?.parent?.name}
                   </span>
                 </>
               )}
@@ -104,7 +110,7 @@ export default function ProductPage({ params }: ProductPageProps) {
 
           <div className="space-y-4">
             <p className="text-gray-700">
-              {product.description}
+              {product.description || 'No description available'}
             </p>
           </div>
 
@@ -118,23 +124,7 @@ export default function ProductPage({ params }: ProductPageProps) {
       </div>
 
       {/* Galería de imágenes adicionales */}
-      {product.additional_images && product.additional_images.length > 0 && (
-        <div className="mt-12">
-          <h2 className="text-2xl font-semibold mb-6">Más imágenes</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {product.additional_images.map((image) => (
-              <div key={image.id} className="relative aspect-square rounded-lg overflow-hidden">
-                <Image
-                  src={image.image_url}
-                  alt={product.name}
-                  fill
-                  className="object-cover hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      
     </div>
   );
 } 

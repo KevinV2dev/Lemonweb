@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Product, Category, productService } from '@/supabase/products';
+import { productService } from '@/supabase/products';
+import type { Product, Category } from '@/types';  // Importar tipos desde @/types
 import { ProductCard } from '@/app/components/ProductCard';
 import { SearchAndFilters } from '@/app/components/SearchAndFilters';
 
@@ -54,7 +55,7 @@ export default function ProductsPage() {
       const searchLower = searchTerm.toLowerCase();
       filtered = filtered.filter(product => 
         product.name.toLowerCase().includes(searchLower) ||
-        product.description.toLowerCase().includes(searchLower) ||
+        (product.description?.toLowerCase() || '').includes(searchLower) ||
         product.category?.name.toLowerCase().includes(searchLower)
       );
     }

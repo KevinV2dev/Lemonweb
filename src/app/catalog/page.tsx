@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { productService } from '@/supabase/products';
+import type { Product, Category } from '@/types';
 import { ProductCard } from '@/app/components/catalog/ProductCard';
 import { CatalogFilters } from '@/app/components/catalog/CatalogFilters';
-import { productService, Product, Category } from '@/supabase/products';
 
 export default function CatalogPage() {
   const [products, setProducts] = useState<Product[]>([]);

@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Product, Category, productService } from '@/supabase/products';
+import { productService } from '@/supabase/products';
+import type { Product, Category } from '@/types';
 import { toast } from 'react-hot-toast';
 import { Eye, Edit, Trash, Search } from 'lucide-react';
 import { ProductDetail } from './ProductDetail';
@@ -64,8 +65,8 @@ export function ProductList({ onEdit, shouldRefresh }: ProductListProps) {
       const searchLower = searchTerm.toLowerCase();
       filtered = filtered.filter(product => 
         product.name.toLowerCase().includes(searchLower) ||
-        product.description.toLowerCase().includes(searchLower) ||
-        product.category?.name.toLowerCase().includes(searchLower) ||
+        (product.description?.toLowerCase() || '').includes(searchLower) ||
+        product.category?.name?.toLowerCase().includes(searchLower) ||
         product.slug.toLowerCase().includes(searchLower)
       );
     }

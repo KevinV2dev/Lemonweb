@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Product, productService } from '@/supabase/products';
+import { productService } from '@/supabase/products';
+import type { Product } from '@/types';  // Importar tipo desde @/types
 
 async function getProduct(slug: string) {
   try {

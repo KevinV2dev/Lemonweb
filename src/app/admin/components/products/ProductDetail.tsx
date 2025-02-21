@@ -1,8 +1,10 @@
 'use client';
 
+import React from 'react';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Product, productService } from '@/supabase/products';
+import { productService } from '@/supabase/products';
+import type { Product } from '@/types';
 import { toast } from 'react-hot-toast';
 import { X, Edit, Trash, Image as ImageIcon } from 'lucide-react';
 import Image from 'next/image';
@@ -99,7 +101,7 @@ export function ProductDetail({ productId, onClose, onEdit, onDelete }: ProductD
           <div className="space-y-6">
             <div>
               <h3 className="text-lg font-medium">Descripción</h3>
-              <p className="text-gray-600 mt-2">{product.description}</p>
+              <p className="text-gray-600 mt-2">{product.description || 'Sin descripción'}</p>
             </div>
 
             <div>

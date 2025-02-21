@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Search, ChevronDown } from 'lucide-react';
-import { Category } from '@/supabase/products';
+import type { Category } from '@/types';  // Importar tipo desde @/types
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface CatalogFiltersProps {

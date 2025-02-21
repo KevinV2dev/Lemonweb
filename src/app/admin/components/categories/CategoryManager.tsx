@@ -1,9 +1,10 @@
 'use client';
 
+import React from 'react';
 import { useState, useEffect } from 'react';
 import { Plus, GripVertical } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { Category, productService } from '@/supabase/products';
+import { productService } from '@/supabase/products';
+import type { Category } from '@/types';
 import { toast } from 'react-hot-toast';
 import { CategoryModal } from './CategoryModal';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';

@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { productService } from '@/supabase/products';
+import type { Category } from '@/types';
 
 interface CategoryModalProps {
   isOpen: boolean;

@@ -1,7 +1,7 @@
 'use client';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Product } from '@/supabase/products';
+import type { Product } from '@/types';
 
 type ProductCardProps = Product;
 

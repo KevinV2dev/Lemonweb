@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Category, productService } from '@/supabase/products';
+import { productService } from '@/supabase/products';
+import type { Category } from '@/types';  // Importar tipo desde @/types
 
 interface CategoryTabsProps {
   onCategoryChange: (categoryId: number | null) => void;

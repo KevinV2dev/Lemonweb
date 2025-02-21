@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { supabase } from '@/supabase/client'
+import { useEffect, useState, Suspense } from 'react'
+import { supabase } from '@/supabase/products'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { EditAppointmentModal } from './components/edit-appointment-modal'
@@ -14,7 +14,7 @@ import { createBrowserClient } from '@/supabase/client'
 import React from 'react'
 import { ProductList } from './components/products/ProductList'
 import { ProductModal } from './components/products/ProductModal'
-import { Product } from '@/supabase/products'
+import type { Product } from '@/types'
 import { CategoryManager } from './components/categories/CategoryManager'
 
 interface Appointment {
@@ -31,7 +31,8 @@ interface Appointment {
   appointment_id: string
 }
 
-export default function AdminPage() {
+// Componente envuelto para useSearchParams
+function AdminPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const supabase = createBrowserClient()
@@ -641,5 +642,14 @@ export default function AdminPage() {
         onSave={handleProductSave}
       />
     </div>
+  )
+}
+
+// Componente principal con Suspense
+export default function AdminPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AdminPageContent />
+    </Suspense>
   )
 } 

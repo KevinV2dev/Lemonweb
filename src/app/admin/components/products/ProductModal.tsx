@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { X, Upload, Trash, Plus } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { Product, Category, productService } from '@/supabase/products';
+import { productService } from '@/supabase/products';
+import type { Product, Category } from '@/types';
 import Image from 'next/image';
 
 interface ProductModalProps {
@@ -32,8 +33,8 @@ export function ProductModal({ isOpen, onClose, product, onSave }: ProductModalP
     if (product) {
       setFormData({
         name: product.name,
-        description: product.description,
-        category_id: product.category_id.toString(),
+        description: product.description || '',
+        category_id: product.category_id?.toString() || '',
         main_image: product.main_image,
         active: product.active
       });
