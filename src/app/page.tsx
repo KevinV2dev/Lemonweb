@@ -8,6 +8,10 @@ import { Navbar } from '@/app/components/ui/navbar';
 import BarraMovil from '@/app/components/ui/barramobile';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Preloader } from '@/app/components/ui/preloader';
+import { ParallaxProvider, Parallax } from 'react-scroll-parallax';
+import Lenis from '@studio-freight/lenis';
+import { Gallery } from '@/app/components/ui/Gallery';
+import { galleryData } from '@/app/gallery-data';
 // Importaremos la barra móvil cuando la crees
 // import BarraMobile from '@/app/components/ui/barramobile';
 
@@ -86,6 +90,26 @@ export default function Home() {
     }
   }, [isPaused]);
 
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation: 'vertical',
+      smoothWheel: true,
+    });
+
+    function raf(time: number) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+
+    requestAnimationFrame(raf);
+
+    return () => {
+      lenis.destroy();
+    };
+  }, []);
+
   const handlePrevSlide = () => {
     setCurrentIndex((prevIndex) => 
       prevIndex === 0 ? carouselData.images.length - 1 : prevIndex - 1
@@ -99,11 +123,11 @@ export default function Home() {
   };
 
   return (
-    <>
+    <ParallaxProvider>
       <AnimatePresence mode="sync">
         {isLoading && <Preloader />}
       </AnimatePresence>
-      <main className="flex flex-col">
+      <main className="flex flex-col mb-24">
         <section 
           className={`
             relative w-full min-h-screen
@@ -337,18 +361,303 @@ export default function Home() {
           </motion.div>
         </section>
 
-        {/* Sección para contenido adicional */}
-        <section className="min-h-screen bg-white">
-          <div className="
-            container mx-auto 
-            px-4 sm:px-6 lg:px-8
-            py-16 sm:py-24
-          ">
-            {/* Aquí irá el contenido adicional */}
-            <h2 className="text-3xl font-bold text-gray-900">Contenido adicional</h2>
+        {/* Sección de contenido adicional */}
+        {/* Bloque 1: Texto Introductorio */}
+        <section className="w-full min-h-screen bg-white flex items-center justify-center relative overflow-hidden">
+          {/* Gradientes base */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1 }}
+            className="absolute inset-0 pointer-events-none"
+          >
+            <motion.div
+              animate={{
+                scale: [1, 1.2, 1],
+                opacity: [0.2, 0.3, 0.2],
+                x: [0, -20, 0],
+                y: [0, 20, 0]
+              }}
+              transition={{
+                duration: 8,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+              className="absolute -bottom-1/4 -left-1/4 w-1/2 h-1/2 rounded-full bg-yellow-lemon blur-[120px]"
+            />
+            <motion.div
+              animate={{
+                scale: [1.2, 1, 1.2],
+                opacity: [0.2, 0.3, 0.2],
+                x: [0, 20, 0],
+                y: [0, -20, 0]
+              }}
+              transition={{
+                duration: 8,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 1
+              }}
+              className="absolute -bottom-1/4 -right-1/4 w-1/2 h-1/2 rounded-full bg-lime-lemon blur-[120px]"
+            />
+          </motion.div>
+
+          {/* Gradiente reactivo al mouse */}
+          <motion.div 
+            className="absolute inset-0 pointer-events-none z-[1]"
+            style={{
+              background: `radial-gradient(600px at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(254, 241, 104, 0.15), transparent 80%)`
+            }}
+          />
+
+          {/* Event listener para el mouse */}
+          <div
+            className="absolute inset-0 z-[2]"
+            onMouseMove={(e) => {
+              const rect = e.currentTarget.getBoundingClientRect();
+              const x = ((e.clientX - rect.left) / rect.width) * 100;
+              const y = ((e.clientY - rect.top) / rect.height) * 100;
+              document.documentElement.style.setProperty('--mouse-x', `${x}%`);
+              document.documentElement.style.setProperty('--mouse-y', `${y}%`);
+            }}
+          />
+
+          {/* Contenido */}
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl text-center relative z-[3]">
+            <motion.div
+              initial={{ y: 30, opacity: 0 }}
+              whileInView={{ y: 0, opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ 
+                duration: 1,
+                ease: [0.43, 0.13, 0.23, 0.96]
+              }}
+              className="space-y-6 select-none"
+            >
+              <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-night-lemon">
+                We create spaces for you, and only you.
+              </h2>
+              <p className="text-silver-lemon text-lg sm:text-xl max-w-2xl mx-auto">
+                At Lemon, we have been evolving, we offer customized organizational solutions to 
+                streamline living areas at your home, giving a purpose of order and style.
+              </p>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Bloque 2: Imagen + Texto */}
+        <section className="w-full bg-night-lemon p-4">
+          <div className="max-w-[1920px] mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-[40%_60%] gap-4 items-center">
+              <div className="relative aspect-[4/3] w-full overflow-hidden">
+                <Image
+                  src="/images/closets_de_melamina.jpg"
+                  alt="Interior design"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <div className="space-y-6 lg:pl-4">
+                <h3 className="text-2xl sm:text-3xl font-bold text-white">
+                  We create spaces for you, and only you.
+                </h3>
+                <p className="text-heaven-lemon max-w-[600px]">
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor 
+                  incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis 
+                  nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Bloque 3: Features */}
+        <section className="w-full bg-white">
+          <div className="max-w-[1920px] mx-auto h-[244px] px-32 py-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-14 w-full h-full">
+              {/* Feature 1 */}
+              <div className="flex flex-col items-start p-4">
+                <div className="mb-4">
+                  <Image
+                    src="/icons/custom-design.svg"
+                    alt="Custom design"
+                    width={48}
+                    height={48}
+                  />
+                </div>
+                <div>
+                  <h4 className="text-xl font-semibold text-night-lemon">Custom design</h4>
+                  <p className="text-silver-lemon mt-2">Cada espacio es único, fabricamos específicamente para ti</p>
+                </div>
+              </div>
+
+              {/* Feature 2 */}
+              <div className="flex flex-col items-start p-4">
+                <div className="mb-4">
+                  <Image
+                    src="/icons/quality.svg"
+                    alt="High quality"
+                    width={48}
+                    height={48}
+                  />
+                </div>
+                <div>
+                  <h4 className="text-xl font-semibold text-night-lemon">High quality materials</h4>
+                  <p className="text-silver-lemon mt-2">Durabilidad y estética en los más finos acabados</p>
+                </div>
+              </div>
+
+              {/* Feature 3 */}
+              <div className="flex flex-col items-start p-4">
+                <div className="mb-4">
+                  <Image
+                    src="/icons/sustainability.svg"
+                    alt="Sustainability"
+                    width={48}
+                    height={48}
+                  />
+                </div>
+                <div>
+                  <h4 className="text-xl font-semibold text-night-lemon">Sustainability</h4>
+                  <p className="text-silver-lemon mt-2">Productos sustentables y responsables con el ambiente</p>
+                </div>
+              </div>
+
+              {/* Feature 4 */}
+              <div className="flex flex-col items-start p-4">
+                <div className="mb-4">
+                  <Image
+                    src="/icons/fast-delivery.svg"
+                    alt="Fast delivery"
+                    width={48}
+                    height={48}
+                  />
+                </div>
+                <div>
+                  <h4 className="text-xl font-semibold text-night-lemon">Fast delivery</h4>
+                  <p className="text-silver-lemon mt-2">Instalación eficiente y en los tiempos acordados</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Bloque 4: Imagen Full Width con Parallax */}
+        <section className="w-full h-[600px] relative overflow-hidden">
+          <Parallax
+            className="w-full h-full"
+            translateY={[-20, 90]}
+            easing="easeInQuad"
+            speed={-10}
+          >
+            <Image
+              src="/images/closet2.jpg"
+              alt="Lemon lifestyle"
+              fill
+              className="object-cover"
+              priority
+              quality={90}
+              sizes="100vw"
+            />
+          </Parallax>
+        </section>
+
+        {/* Bloque 5: Our Story */}
+        <section className="w-full py-24 bg-white">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl text-center">
+            <h2 className="text-3xl sm:text-4xl font-bold text-night-lemon mb-6">
+              Our story
+            </h2>
+            <p className="text-silver-lemon text-lg">
+              Lemon nació como respuesta a la necesidad actual de optimizar el espacio sin sacrificar el estilo. 
+              En un época donde cada vez más personas trabajan desde casa, entendemos la importancia de crear 
+              espacios funcionales, elegantes y perfectamente adaptados a las necesidades de nuestros clientes.
+            </p>
+          </div>
+        </section>
+
+        {/* Bloque 6: Proceso */}
+        <section className="w-full bg-white p-4">
+          <div className="max-w-[1920px] mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-12 items-center">
+              <div className="relative aspect-[4/3] w-full overflow-hidden">
+                <Parallax
+                  className="w-full h-full"
+                  translateY={[-30, 60]}
+                  easing="easeInQuad"
+                  speed={-50}
+                >
+                  <Image
+                    src="/images/Closet1.webp"
+                    alt="Our process"
+                    fill
+                    className="object-cover"
+                    priority
+                    quality={90}
+                    sizes="100vw"
+                  />
+                </Parallax>
+              </div>
+              <div className="space-y-8">
+                <h3 className="text-2xl sm:text-3xl font-bold text-night-lemon">
+                  The process
+                </h3>
+                <div className="space-y-6">
+                  <div>
+                    <h4 className="font-semibold text-night-lemon">Consulta personalizada</h4>
+                    <p className="text-silver-lemon">Analizamos tu espacio y necesidades</p>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-night-lemon">Diseño a medida</h4>
+                    <p className="text-silver-lemon">Creamos una solución adaptada a tu hogar</p>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-night-lemon">Fabricación de calidad</h4>
+                    <p className="text-silver-lemon">Proceso de producción con materiales de primera categoría</p>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-night-lemon">Instalación</h4>
+                    <p className="text-silver-lemon">Instalamos y organizamos tu espacio de forma eficiente</p>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-night-lemon">Disfruta tu nuevo espacio</h4>
+                    <p className="text-silver-lemon">Vive el armario con un diseño optimizado para tu estilo de vida</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Bloque 7: CTA */}
+        <section className="w-full py-16 bg-white">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p className="text-night-lemon text-xl mb-4">
+              ¿Quieres renovar tu hogar? Explora nuestro{" "}
+              <button 
+                onClick={() => router.push('/catalog')}
+                className="text-night-lemon font-semibold underline hover:text-night-lemon/80"
+              >
+                catálogo
+              </button>{" "}
+              o{" "}
+              <button
+                onClick={() => router.push('/appointment')}
+                className="text-night-lemon font-semibold underline hover:text-night-lemon/80"
+              >
+                agenda una cita
+              </button>
+            </p>
+          </div>
+        </section>
+
+        {/* Bloque 8: Galería */}
+        <section className="w-full bg-white">
+          <div className="px-4">
+            <Gallery images={galleryData.images} />
           </div>
         </section>
       </main>
-    </>
+    </ParallaxProvider>
   );
 }

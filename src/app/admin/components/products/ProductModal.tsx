@@ -55,11 +55,79 @@ export function ProductModal({ isOpen, onClose, product, onSave }: ProductModalP
 
   const handleImageUpload = async (file: File) => {
     try {
-      const url = await productService.uploadProductImage(file);
+      // Validar el tipo de archivo
+      if (!file.type.startsWith('image/')) {
+        toast.error('Por favor, selecciona un archivo de imagen válido');
+        return;
+      }
+
+      // Validar el tamaño (máximo 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('La imagen no debe superar los 5MB');
+        return;
+      }
+
+      // Validar las dimensiones
+      const img = document.createElement('img');
+      const imgUrl = URL.createObjectURL(file);
+      
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error('Error al cargar la imagen'));
+        img.src = imgUrl;
+      });
+
+      // Verificar dimensiones mínimas
+      if (img.width < 800 || img.height < 600) {
+        URL.revokeObjectURL(imgUrl);
+        toast.error('La imagen debe tener al menos 800x600 píxeles');
+        return;
+      }
+
+      // Comprimir la imagen si es necesario
+      let imageToUpload = file;
+      if (file.size > 1 * 1024 * 1024) { // Si es mayor a 1MB
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Mantener la relación de aspecto
+        const maxWidth = 1920;
+        const maxHeight = 1440;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth) {
+          height = (maxWidth * height) / width;
+          width = maxWidth;
+        }
+        if (height > maxHeight) {
+          width = (maxHeight * width) / height;
+          height = maxHeight;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        ctx?.drawImage(img, 0, 0, width, height);
+
+        // Convertir a Blob con calidad 0.8
+        const blob = await new Promise<Blob>((resolve) => {
+          canvas.toBlob((b) => resolve(b!), 'image/jpeg', 0.8);
+        });
+
+        imageToUpload = new File([blob], file.name, {
+          type: 'image/jpeg',
+          lastModified: Date.now(),
+        });
+      }
+
+      URL.revokeObjectURL(imgUrl);
+
+      const url = await productService.uploadProductImage(imageToUpload);
       setFormData(prev => ({ ...prev, main_image: url }));
+      toast.success('Imagen subida correctamente');
     } catch (error) {
-      toast.error('Error al subir la imagen');
-      console.error(error);
+      console.error('Error al procesar la imagen:', error);
+      toast.error('Error al procesar la imagen');
     }
   };
 

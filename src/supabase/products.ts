@@ -361,5 +361,20 @@ export const productService = {
       console.error('Error deleting category:', error);
       throw error;
     }
+  },
+
+  async getProductsByCategory(categoryId: string) {
+    const { data, error } = await supabase
+      .from('products')
+      .select(`
+        *,
+        category:categories(*)
+      `)
+      .eq('category_id', categoryId)
+      .eq('active', true)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data;
   }
 }; 
