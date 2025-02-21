@@ -1,12 +1,14 @@
--- Tabla para categorías
+-- Todo lo relacionado con productos
 CREATE TABLE IF NOT EXISTS categories (
   id SERIAL PRIMARY KEY,
   name TEXT NOT NULL UNIQUE,
   slug TEXT NOT NULL UNIQUE,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
+  parent_id INTEGER REFERENCES categories(id) ON DELETE SET NULL,
+  type TEXT CHECK (type IN ('category', 'subcategory', 'material')),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
+  display_order INTEGER DEFAULT 0
 );
 
--- Tabla para productos
 CREATE TABLE IF NOT EXISTS products (
   id SERIAL PRIMARY KEY,
   name TEXT NOT NULL,
@@ -28,10 +30,20 @@ CREATE TABLE IF NOT EXISTS product_images (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
 );
 
+-- Tabla para materiales
+CREATE TABLE IF NOT EXISTS materials (
+  id SERIAL PRIMARY KEY,
+  name TEXT NOT NULL UNIQUE,
+  slug TEXT NOT NULL UNIQUE,
+  description TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
+);
+
 -- Políticas RLS
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE product_images ENABLE ROW LEVEL SECURITY;
+ALTER TABLE materials ENABLE ROW LEVEL SECURITY;
 
 -- Políticas para productos
 CREATE POLICY "Productos públicos visibles para todos"
@@ -105,6 +117,30 @@ WITH CHECK (
   )
 );
 
+-- Políticas para materiales
+CREATE POLICY "Materiales visibles para todos"
+ON materials
+FOR SELECT
+TO public
+USING (true);
+
+CREATE POLICY "Solo admins pueden gestionar materiales"
+ON materials
+FOR ALL
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM admins
+    WHERE admins.email = auth.email()
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM admins
+    WHERE admins.email = auth.email()
+  )
+);
+
 -- Función para actualizar updated_at
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -119,4 +155,48 @@ CREATE TRIGGER update_products_updated_at
   BEFORE UPDATE
   ON products
   FOR EACH ROW
-  EXECUTE PROCEDURE update_updated_at_column(); 
+  EXECUTE PROCEDURE update_updated_at_column();
+
+-- Actualizar las categorías existentes para establecer el tipo
+UPDATE categories 
+SET type = 'category' 
+WHERE type IS NULL;
+
+-- Hacer que el campo type sea NOT NULL después de la actualización
+ALTER TABLE categories 
+ALTER COLUMN type SET NOT NULL;
+
+-- Añadir la columna display_order si no existe
+DO $$ 
+BEGIN 
+  IF NOT EXISTS (
+    SELECT 1 
+    FROM information_schema.columns 
+    WHERE table_name = 'categories' 
+    AND column_name = 'display_order'
+  ) THEN
+    ALTER TABLE categories
+    ADD COLUMN display_order INTEGER DEFAULT 0;
+  END IF;
+END $$;
+
+-- Actualizar los registros existentes con un orden basado en el nombre
+UPDATE categories
+SET display_order = subquery.row_num
+FROM (
+  SELECT id, ROW_NUMBER() OVER (ORDER BY name) as row_num
+  FROM categories
+) as subquery
+WHERE categories.id = subquery.id;
+
+-- Añadir un índice para optimizar las consultas por orden si no existe
+DO $$ 
+BEGIN 
+  IF NOT EXISTS (
+    SELECT 1 
+    FROM pg_indexes 
+    WHERE indexname = 'idx_categories_display_order'
+  ) THEN
+    CREATE INDEX idx_categories_display_order ON categories(display_order);
+  END IF;
+END $$; 

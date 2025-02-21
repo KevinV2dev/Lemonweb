@@ -17,6 +17,9 @@ export interface Product {
   updated_at: string;
   category?: Category;
   additional_images?: ProductImage[];
+  colors?: ProductColor[];
+  materials?: ProductMaterial[];
+  attributes?: ProductAttribute[];
 }
 
 export interface Category {
@@ -24,6 +27,7 @@ export interface Category {
   name: string;
   slug: string;
   created_at: string;
+  display_order: number;
 }
 
 export interface ProductImage {
@@ -31,6 +35,29 @@ export interface ProductImage {
   product_id: number;
   image_url: string;
   display_order: number;
+  created_at: string;
+}
+
+export interface ProductColor {
+  id: number;
+  name: string;
+  hex_code: string | null;
+  description: string | null;
+  created_at: string;
+}
+
+export interface ProductMaterial {
+  id: number;
+  name: string;
+  description: string | null;
+  created_at: string;
+}
+
+export interface ProductAttribute {
+  id: number;
+  product_id: number;
+  name: string;
+  value: string;
   created_at: string;
 }
 
@@ -69,8 +96,20 @@ export const productService = {
     const { data, error } = await supabase
       .from('categories')
       .select('*')
-      .order('name');
+      .order('display_order');
 
+    if (error) {
+      console.error('Error fetching categories:', error);
+      throw error;
+    }
+    return data;
+  },
+
+  async getMaterials() {
+    const { data, error } = await supabase
+      .from('product_materials')
+      .select('*')
+      .order('name');
     if (error) throw error;
     return data;
   },
@@ -87,27 +126,80 @@ export const productService = {
   },
 
   async updateProduct(id: number, productData: Partial<Product>) {
-    const { data, error } = await supabase
-      .from('products')
-      .update(productData)
-      .eq('id', id)
-      .select('*, category:categories(*)')
-      .single();
+    try {
+      // Si hay una nueva imagen y había una imagen anterior, eliminamos la anterior
+      if (productData.main_image) {
+        const { data: oldProduct } = await supabase
+          .from('products')
+          .select('main_image')
+          .eq('id', id)
+          .single();
 
-    if (error) throw error;
-    return data;
+        if (oldProduct?.main_image && oldProduct.main_image !== productData.main_image) {
+          const oldFileName = oldProduct.main_image.split('/').pop();
+          if (oldFileName) {
+            await supabase.storage
+              .from('products')
+              .remove([oldFileName]);
+          }
+        }
+      }
+
+      // Actualizamos el producto
+      const { data, error } = await supabase
+        .from('products')
+        .update(productData)
+        .eq('id', id)
+        .select('*, category:categories(*)')
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error in updateProduct:', error);
+      throw error;
+    }
   },
 
   async deleteProduct(id: number) {
-    const { error } = await supabase
-      .from('products')
-      .delete()
-      .eq('id', id);
+    try {
+      // Primero obtenemos el producto para saber su imagen
+      const { data: product, error: fetchError } = await supabase
+        .from('products')
+        .select('main_image')
+        .eq('id', id)
+        .single();
 
-    if (error) throw error;
+      if (fetchError) throw fetchError;
+
+      // Eliminamos el producto de la base de datos
+      const { error: deleteError } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', id);
+
+      if (deleteError) throw deleteError;
+
+      // Si el producto tenía una imagen, la eliminamos del storage
+      if (product?.main_image) {
+        const fileName = product.main_image.split('/').pop();
+        if (fileName) {
+          const { error: storageError } = await supabase.storage
+            .from('products')
+            .remove([fileName]);
+
+          if (storageError) {
+            console.error('Error deleting image from storage:', storageError);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error in deleteProduct:', error);
+      throw error;
+    }
   },
 
-  async createCategory(categoryData: { name: string; slug: string }) {
+  async createCategory(categoryData: { name: string; slug: string; }) {
     const { data, error } = await supabase
       .from('categories')
       .insert([categoryData])
@@ -167,5 +259,139 @@ export const productService = {
       .remove([`product-images/${filePath}`]);
 
     if (error) throw error;
+  },
+
+  async getColors() {
+    const { data, error } = await supabase
+      .from('product_colors')
+      .select('*')
+      .order('name');
+    if (error) throw error;
+    return data;
+  },
+
+  async createColor(color: Omit<ProductColor, 'id' | 'created_at'>) {
+    const { data, error } = await supabase
+      .from('product_colors')
+      .insert([color])
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  async getProductAttributes(productId: number) {
+    const { data, error } = await supabase
+      .from('product_attributes')
+      .select('*')
+      .eq('product_id', productId)
+      .order('name');
+    if (error) throw error;
+    return data;
+  },
+
+  async addProductAttribute(attribute: Omit<ProductAttribute, 'id' | 'created_at'>) {
+    const { data, error } = await supabase
+      .from('product_attributes')
+      .insert([attribute])
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  async addProductColor(productId: number, colorId: number) {
+    const { error } = await supabase
+      .from('product_color_relations')
+      .insert([{ product_id: productId, color_id: colorId }]);
+    if (error) throw error;
+  },
+
+  async addProductMaterial(productId: number, materialId: number) {
+    const { error } = await supabase
+      .from('product_material_relations')
+      .insert([{ product_id: productId, material_id: materialId }]);
+    if (error) throw error;
+  },
+
+  async getProductById(id: number) {
+    const { data, error } = await supabase
+      .from('products')
+      .select(`
+        *,
+        category:categories(*),
+        additional_images:product_images(*)
+      `)
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  async createProductImage(imageData: { product_id: number; image_url: string; display_order: number }) {
+    const { data, error } = await supabase
+      .from('product_images')
+      .insert([imageData])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  async updateCategoryOrder(categoryId: number, newOrder: number) {
+    const { error } = await supabase
+      .from('categories')
+      .update({ display_order: newOrder })
+      .eq('id', categoryId);
+
+    if (error) {
+      console.error('Error updating category order:', error);
+      throw error;
+    }
+  },
+
+  async reorderCategories(orderedCategories: { id: number, display_order: number }[]) {
+    // Primero obtenemos las categorías actuales para mantener todos los campos requeridos
+    const { data: currentCategories, error: fetchError } = await supabase
+      .from('categories')
+      .select('*')
+      .in('id', orderedCategories.map(c => c.id));
+
+    if (fetchError) {
+      console.error('Error fetching current categories:', fetchError);
+      throw fetchError;
+    }
+
+    // Creamos un mapa de las categorías actuales
+    const categoryMap = new Map(currentCategories.map(cat => [cat.id, cat]));
+
+    // Actualizamos solo el display_order manteniendo el resto de campos
+    const updates = orderedCategories.map(({ id, display_order }) => ({
+      ...categoryMap.get(id),
+      display_order
+    }));
+
+    const { error: updateError } = await supabase
+      .from('categories')
+      .upsert(updates);
+
+    if (updateError) {
+      console.error('Error reordering categories:', updateError);
+      throw updateError;
+    }
+  },
+
+  async deleteCategory(id: number) {
+    const { error } = await supabase
+      .from('categories')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting category:', error);
+      throw error;
+    }
   }
 }; 

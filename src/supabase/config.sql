@@ -98,3 +98,15 @@ ADD CONSTRAINT unique_appointment_id UNIQUE (appointment_id);
 -- Eliminar cualquier constraint único en appointment_date si existe
 ALTER TABLE appointments 
 DROP CONSTRAINT IF EXISTS unique_appointment_date;
+
+-- Todo lo relacionado con configuración y citas
+CREATE TABLE IF NOT EXISTS appointments (
+  id SERIAL PRIMARY KEY,
+  -- ... resto de campos
+);
+
+CREATE TABLE IF NOT EXISTS admins (
+  email TEXT PRIMARY KEY
+);
+
+-- ... resto de tablas y políticas relacionadas con configuración

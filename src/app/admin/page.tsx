@@ -9,12 +9,13 @@ import { toast } from 'react-hot-toast'
 import { motion } from 'framer-motion'
 import { Sidebar } from './components/sidebar'
 import { Plus } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createBrowserClient } from '@/supabase/client'
 import React from 'react'
 import { ProductList } from './components/products/ProductList'
 import { ProductModal } from './components/products/ProductModal'
 import { Product } from '@/supabase/products'
+import { CategoryManager } from './components/categories/CategoryManager'
 
 interface Appointment {
   id: string
@@ -32,6 +33,7 @@ interface Appointment {
 
 export default function AdminPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const supabase = createBrowserClient()
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [filteredAppointments, setFilteredAppointments] = useState<Appointment[]>([])
@@ -39,7 +41,7 @@ export default function AdminPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [currentSection, setCurrentSection] = useState('appointments')
+  const [currentSection, setCurrentSection] = useState(searchParams.get('section') || 'appointments')
   const [sortConfig, setSortConfig] = useState<{
     key: keyof Appointment | null;
     direction: 'asc' | 'desc';
@@ -49,6 +51,7 @@ export default function AdminPage() {
   });
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | undefined>();
+  const [shouldRefreshProducts, setShouldRefreshProducts] = useState(false);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -318,200 +321,7 @@ export default function AdminPage() {
         )
 
       case 'appointments':
-    return (
-          <div className="min-h-screen bg-gray-50 py-8 overflow-x-hidden">
-            {/* Stats Overview */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-3 mb-8">
-                <motion.div
-                  whileHover={{ y: -4 }}
-                  transition={{ duration: 0.2 }}
-                  className="bg-white overflow-hidden shadow rounded-lg"
-                >
-                  <div className="p-5">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0">
-                        <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </div>
-                      <div className="ml-5 w-0 flex-1">
-                        <dl>
-                          <dt className="text-sm font-medium text-gray-500 truncate">
-                            Citas Pendientes
-                          </dt>
-                          <dd className="text-lg font-medium text-gray-900">
-                            {appointments.filter(a => a.status === 'pending').length}
-                          </dd>
-                        </dl>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-
-                <motion.div
-                  whileHover={{ y: -4 }}
-                  transition={{ duration: 0.2 }}
-                  className="bg-white overflow-hidden shadow rounded-lg"
-                >
-                  <div className="p-5">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0">
-                        <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </div>
-                      <div className="ml-5 w-0 flex-1">
-                        <dl>
-                          <dt className="text-sm font-medium text-gray-500 truncate">
-                            Citas Completadas
-                          </dt>
-                          <dd className="text-lg font-medium text-gray-900">
-                            {appointments.filter(a => a.status === 'completed').length}
-                          </dd>
-                        </dl>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-
-                <motion.div
-                  whileHover={{ y: -4 }}
-                  transition={{ duration: 0.2 }}
-                  className="bg-white overflow-hidden shadow rounded-lg"
-                >
-                  <div className="p-5">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0">
-                        <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 12H4" />
-                        </svg>
-                      </div>
-                      <div className="ml-5 w-0 flex-1">
-                        <dl>
-                          <dt className="text-sm font-medium text-gray-500 truncate">
-                            Citas Canceladas
-                          </dt>
-                          <dd className="text-lg font-medium text-gray-900">
-                            {appointments.filter(a => a.status === 'cancelled').length}
-                          </dd>
-                        </dl>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              </div>
-
-              {/* Appointments Table */}
-              <div className="bg-white shadow rounded-lg overflow-hidden">
-            <div className="px-4 py-5 sm:p-6">
-                  <div className="sm:flex sm:items-center sm:justify-between">
-                    <div className="sm:flex-auto">
-                      <h1 className="text-xl font-semibold text-gray-900">Citas</h1>
-                      <p className="mt-2 text-sm text-gray-700">
-                        Listado de todas las citas agendadas
-                      </p>
-                    </div>
-                    <div className="mt-4 sm:mt-0 sm:flex-none">
-                      <motion.input
-                        whileFocus={{ scale: 1.01 }}
-                        transition={{ duration: 0.2 }}
-                        type="text"
-                        placeholder="Buscar por nombre, email o teléfono..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm p-2"
-                      />
-                    </div>
-                  </div>
-                  
-                  {isLoading ? (
-                    <div className="flex justify-center items-center h-32">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-                    </div>
-                  ) : (
-                    <div className="mt-8 flow-root">
-                      <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                        <div className="inline-block min-w-full py-2 align-middle">
-                          <table className="min-w-full divide-y divide-gray-300">
-                            <thead>
-                              <tr>
-                                <SortableHeader column="appointment_id" label="ID" />
-                                <SortableHeader column="client_name" label="Client" />
-                                <SortableHeader column="client_email" label="Email" />
-                                <SortableHeader column="phone" label="Phone" />
-                                <SortableHeader column="appointment_date" label="Date" />
-                                <SortableHeader column="preferred_contact_time" label="Contact" />
-                                <SortableHeader column="status" label="Status" />
-                                <SortableHeader column="created_at" label="Created" />
-                                <th className="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                                  <span className="sr-only">Acciones</span>
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-200 bg-white">
-                              {sortedAppointments.map((appointment) => (
-                                <tr key={appointment.id} className="hover:bg-gray-50">
-                                  <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                    {appointment.appointment_id}
-                                  </td>
-                                  <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-900">
-                                    {appointment.client_name}
-                                  </td>
-                                  <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                    {appointment.client_email}
-                                  </td>
-                                  <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                    {appointment.phone}
-                                  </td>
-                                  <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                    {format(new Date(appointment.appointment_date), "d 'de' MMMM 'de' yyyy 'a las' HH:mm", { locale: es })}
-                                  </td>
-                                  <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                    {getPreferredContactTime(appointment.preferred_contact_time)}
-                                  </td>
-                                  <td className="whitespace-nowrap px-3 py-4 text-sm">
-                                    <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${getStatusColor(appointment.status)}`}>
-                                      {getStatusText(appointment.status)}
-                                    </span>
-                                  </td>
-                                  <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                    {format(new Date(appointment.created_at), "d MMM yyyy HH:mm", { locale: es })}
-                                  </td>
-                                  <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                                    <motion.button
-                                      whileHover={{ scale: 1.05 }}
-                                      whileTap={{ scale: 0.95 }}
-                                      onClick={() => {
-                                        setSelectedAppointment(appointment)
-                                        setIsModalOpen(true)
-                                      }}
-                                      className="text-indigo-600 hover:text-indigo-900 mr-4"
-                                    >
-                                      Editar
-                                    </motion.button>
-                                    <motion.button
-                                      whileHover={{ scale: 1.05 }}
-                                      whileTap={{ scale: 0.95 }}
-                                      onClick={() => handleDelete(appointment.id)}
-                                      className="text-red-600 hover:text-red-900"
-                                    >
-                                      Eliminar
-                                    </motion.button>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        )
+        return renderAppointments();
 
       case 'products':
         return (
@@ -534,28 +344,15 @@ export default function AdminPage() {
 
             <div className="bg-white rounded-lg shadow">
               <ProductList 
-                onEdit={(product) => {
-                  setSelectedProduct(product);
-                  setIsProductModalOpen(true);
-                }}
+                onEdit={handleEditProduct} 
+                shouldRefresh={shouldRefreshProducts}
               />
             </div>
-
-            <ProductModal
-              isOpen={isProductModalOpen}
-              onClose={() => {
-                setIsProductModalOpen(false);
-                setSelectedProduct(undefined);
-              }}
-              product={selectedProduct}
-              onSave={(product) => {
-                // TODO: Implementar lógica de guardado/actualización
-                setIsProductModalOpen(false);
-                setSelectedProduct(undefined);
-              }}
-            />
           </div>
-        )
+        );
+
+      case 'categories':
+        return <CategoryManager />;
 
       case 'settings':
         return (
@@ -572,9 +369,228 @@ export default function AdminPage() {
     }
   }
 
+  const renderAppointments = () => {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8 overflow-x-hidden">
+        {/* Stats Overview */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-3 mb-8">
+            <motion.div
+              whileHover={{ y: -4 }}
+              transition={{ duration: 0.2 }}
+              className="bg-white overflow-hidden shadow rounded-lg"
+            >
+              <div className="p-5">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div className="ml-5 w-0 flex-1">
+                    <dl>
+                      <dt className="text-sm font-medium text-gray-500 truncate">
+                        Citas Pendientes
+                      </dt>
+                      <dd className="text-lg font-medium text-gray-900">
+                        {appointments.filter(a => a.status === 'pending').length}
+                      </dd>
+                    </dl>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ y: -4 }}
+              transition={{ duration: 0.2 }}
+              className="bg-white overflow-hidden shadow rounded-lg"
+            >
+              <div className="p-5">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div className="ml-5 w-0 flex-1">
+                    <dl>
+                      <dt className="text-sm font-medium text-gray-500 truncate">
+                        Citas Completadas
+                      </dt>
+                      <dd className="text-lg font-medium text-gray-900">
+                        {appointments.filter(a => a.status === 'completed').length}
+                      </dd>
+                    </dl>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ y: -4 }}
+              transition={{ duration: 0.2 }}
+              className="bg-white overflow-hidden shadow rounded-lg"
+            >
+              <div className="p-5">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 12H4" />
+                    </svg>
+                  </div>
+                  <div className="ml-5 w-0 flex-1">
+                    <dl>
+                      <dt className="text-sm font-medium text-gray-500 truncate">
+                        Citas Canceladas
+                      </dt>
+                      <dd className="text-lg font-medium text-gray-900">
+                        {appointments.filter(a => a.status === 'cancelled').length}
+                      </dd>
+                    </dl>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Appointments Table */}
+          <div className="bg-white shadow rounded-lg overflow-hidden">
+            <div className="px-4 py-5 sm:p-6">
+              <div className="sm:flex sm:items-center sm:justify-between">
+                <div className="sm:flex-auto">
+                  <h1 className="text-xl font-semibold text-gray-900">Citas</h1>
+                  <p className="mt-2 text-sm text-gray-700">
+                    Listado de todas las citas agendadas
+                  </p>
+                </div>
+                <div className="mt-4 sm:mt-0 sm:flex-none">
+                  <motion.input
+                    whileFocus={{ scale: 1.01 }}
+                    transition={{ duration: 0.2 }}
+                    type="text"
+                    placeholder="Buscar por nombre, email o teléfono..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm p-2"
+                  />
+                </div>
+              </div>
+              
+              {isLoading ? (
+                <div className="flex justify-center items-center h-32">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                </div>
+              ) : (
+                <div className="mt-8 flow-root">
+                  <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                    <div className="inline-block min-w-full py-2 align-middle">
+                      <table className="min-w-full divide-y divide-gray-300">
+                        <thead>
+                          <tr>
+                            <SortableHeader column="appointment_id" label="ID" />
+                            <SortableHeader column="client_name" label="Client" />
+                            <SortableHeader column="client_email" label="Email" />
+                            <SortableHeader column="phone" label="Phone" />
+                            <SortableHeader column="appointment_date" label="Date" />
+                            <SortableHeader column="preferred_contact_time" label="Contact" />
+                            <SortableHeader column="status" label="Status" />
+                            <SortableHeader column="created_at" label="Created" />
+                            <th className="relative py-3.5 pl-3 pr-4 sm:pr-6">
+                              <span className="sr-only">Acciones</span>
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200 bg-white">
+                          {sortedAppointments.map((appointment) => (
+                            <tr key={appointment.id} className="hover:bg-gray-50">
+                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                {appointment.appointment_id}
+                              </td>
+                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-900">
+                                {appointment.client_name}
+                              </td>
+                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                {appointment.client_email}
+                              </td>
+                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                {appointment.phone}
+                              </td>
+                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                {format(new Date(appointment.appointment_date), "d 'de' MMMM 'de' yyyy 'a las' HH:mm", { locale: es })}
+                              </td>
+                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                {getPreferredContactTime(appointment.preferred_contact_time)}
+                              </td>
+                              <td className="whitespace-nowrap px-3 py-4 text-sm">
+                                <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${getStatusColor(appointment.status)}`}>
+                                  {getStatusText(appointment.status)}
+                                </span>
+                              </td>
+                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                {format(new Date(appointment.created_at), "d MMM yyyy HH:mm", { locale: es })}
+                              </td>
+                              <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                                <motion.button
+                                  whileHover={{ scale: 1.05 }}
+                                  whileTap={{ scale: 0.95 }}
+                                  onClick={() => {
+                                    setSelectedAppointment(appointment)
+                                    setIsModalOpen(true)
+                                  }}
+                                  className="text-indigo-600 hover:text-indigo-900 mr-4"
+                                >
+                                  Editar
+                                </motion.button>
+                                <motion.button
+                                  whileHover={{ scale: 1.05 }}
+                                  whileTap={{ scale: 0.95 }}
+                                  onClick={() => handleDelete(appointment.id)}
+                                  className="text-red-600 hover:text-red-900"
+                                >
+                                  Eliminar
+                                </motion.button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  const handleEditProduct = (product: Product) => {
+    setSelectedProduct(product);
+    setIsProductModalOpen(true);
+  }
+
+  // Actualizar la URL cuando cambie la sección
+  const handleSectionChange = (section: string) => {
+    setCurrentSection(section);
+    router.push(`/admin?section=${section}`, { scroll: false });
+  };
+
+  const handleProductSave = async (product: Product) => {
+    setIsProductModalOpen(false);
+    setSelectedProduct(undefined);
+    // Forzar recarga de productos
+    setShouldRefreshProducts(true);
+    toast.success(product.id ? 'Producto actualizado' : 'Producto creado');
+  };
+
   return (
-    <div className="flex h-screen bg-gray-50">
-      <Sidebar currentSection={currentSection} onSectionChange={setCurrentSection} />
+    <div className="flex h-screen bg-gray-100">
+      <Sidebar 
+        currentSection={currentSection} 
+        onSectionChange={handleSectionChange}
+      />
       <div className="flex-1 overflow-hidden">
         <div className="p-8">
           {renderContent()}
@@ -614,6 +630,16 @@ export default function AdminPage() {
           }}
         />
       )}
+
+      <ProductModal
+        isOpen={isProductModalOpen}
+        onClose={() => {
+          setIsProductModalOpen(false);
+          setSelectedProduct(undefined);
+        }}
+        product={selectedProduct}
+        onSave={handleProductSave}
+      />
     </div>
   )
 } 
