@@ -6,12 +6,27 @@ import { carouselData } from '@/app/carousel'; //Para mas Imagenes importar el C
 import BarraDerecha from '@/app/components/ui/barraderecha';
 import { Navbar } from '@/app/components/ui/navbar';
 import BarraMovil from '@/app/components/ui/barramobile';
+import { motion, AnimatePresence } from 'framer-motion';
 // Importaremos la barra móvil cuando la crees
 // import BarraMobile from '@/app/components/ui/barramobile';
+
+const slideVariants = {
+  enter: (direction: number) => ({
+    x: direction > 0 ? '100%' : '-100%',
+  }),
+  center: {
+    x: 0,
+  },
+  exit: (direction: number) => ({
+    x: direction < 0 ? '100%' : '-100%',
+  })
+};
 
 export default function Home() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [direction, setDirection] = useState(0);
   const router = useRouter();
 
   // Solo mantenemos la detección para la barra móvil
@@ -26,20 +41,35 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentIndex((prevIndex) => 
-        prevIndex === carouselData.images.length - 1 ? 0 : prevIndex + 1
-      );
-    }, 3000);
+    if (!isPaused) {
+      const timer = setInterval(() => {
+        setDirection(1);
+        setCurrentIndex((prevIndex) => 
+          prevIndex === carouselData.images.length - 1 ? 0 : prevIndex + 1
+        );
+      }, 4000);
 
-    return () => clearInterval(timer);
-  }, []);
+      return () => clearInterval(timer);
+    }
+  }, [isPaused]);
+
+  const handlePrevSlide = () => {
+    setCurrentIndex((prevIndex) => 
+      prevIndex === 0 ? carouselData.images.length - 1 : prevIndex - 1
+    );
+  };
+
+  const handleNextSlide = () => {
+    setCurrentIndex((prevIndex) => 
+      prevIndex === carouselData.images.length - 1 ? 0 : prevIndex + 1
+    );
+  };
 
   return (
     <main className="flex flex-col">
       <section 
         className={`
-          relative w-full  /* Cambiamos min-h-screen por h-screen */
+          relative w-full min-h-screen
           grid grid-cols-1 lg:grid-cols-[1fr_auto] 
           overflow-hidden
         `}
@@ -102,68 +132,106 @@ export default function Home() {
         <div className="
           flex flex-col justify-center
           px-4 sm:px-[82px]
-          pt-[88px] sm:pt-[100px]
+          pt-[120px] sm:pt-[140px]
           pb-[120px] sm:pb-[200px] lg:pb-[300px] 2xl:pb-[0px]
           relative z-10
           w-full
           h-full
         ">
-          <div className="flex gap-8 flex-col">
-            {/* Carrusel */}
-            <div className="
-              relative overflow-hidden z-0
-              w-[337px] h-[200px]                    
-              sm:w-[504px] sm:h-[336px]              
-              lg:w-[520px] lg:h-[334px]              
-            ">
-              {carouselData.images.map((image, index) => (
-                <div
-                  key={image.id}
-                  className={`absolute w-full h-full transition-opacity duration-1000 ease-in-out
-                    ${index === currentIndex ? 'opacity-100' : 'opacity-0'}`}
-                >
-                  <Image
-                    src={image.src}
-                    alt={image.alt}
-                    fill
-                    className="object-cover"
-                    priority={index === 0}
-                  />
-                </div>
-              ))}
+          <div className="flex gap-4 flex-col">
+            {/* Texto - Ahora primero en el orden */}
+            <div className="flex flex-col">
+              <h1 className="
+                text-night-lemon
+                text-normal sm:text-5xl lg:text-[32px]
+                font-bold 
+                leading-tight
+                tracking-tight
+                max-w-2xl
+              ">
+                Fresh spaces, clear minds.
+              </h1>
+
+              <div className="
+                flex flex-col mt-4
+                text-normal sm:normal
+                text-night-lemon
+                max-w-[550px]
+              ">
+                <span>
+                  Get a personalized solution to your spaces 
+                  create unique pieces for you and your home. Deal with professionals who care.
+                </span>
+              </div>
             </div>
 
-            {/* Botón */}
+            {/* Carrusel mejorado */}
+            <div 
+              className="
+                relative overflow-hidden z-0
+                w-full max-w-[600px]
+                aspect-[3/2]
+              "
+              onMouseEnter={() => setIsPaused(true)}
+              onMouseLeave={() => setIsPaused(false)}
+            >
+              <AnimatePresence initial={false} custom={direction} mode="popLayout">
+                <motion.div
+                  key={currentIndex}
+                  custom={direction}
+                  variants={slideVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{
+                    x: { type: "tween", duration: 0.6, ease: [0.4, 0, 0.2, 1] }
+                  }}
+                  className="absolute inset-0 w-full h-full"
+                >
+                  <div className="relative w-full h-full overflow-hidden">
+                    <Image
+                      src={carouselData.images[currentIndex].src}
+                      alt={carouselData.images[currentIndex].alt}
+                      fill
+                      className="object-cover transition-transform duration-500 hover:scale-105"
+                      priority={currentIndex === 0}
+                    />
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+
+              {/* Indicadores */}
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                {carouselData.images.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      setDirection(index > currentIndex ? 1 : -1);
+                      setCurrentIndex(index);
+                    }}
+                    className={`h-2 transition-all duration-300
+                      ${index === currentIndex ? 'bg-white w-8' : 'bg-white/50 w-2'}
+                    `}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Botón CTA */}
             <button 
               onClick={() => router.push('/appointment')}  
-              className='bg-[#1D1C19] text-[#fff] px-6 py-[10px] flex items-center gap-2 w-fit'
+              className="bg-night-lemon text-white px-6 py-[10px] flex items-center gap-2 group w-fit"
             >
               SET AN APPOINTMENT
-              <span> 
+              <span className="transform transition-transform duration-200 ease-out group-hover:translate-x-[2px] group-hover:-translate-y-[2px]">
                 <Image
                   src='/icons/Vector.svg'
                   width={14} 
                   height={14}
-                  alt="Lemon"
+                  alt="Arrow right"
                 />
               </span>
             </button>
-
-            {/* Texto */}
-            <div className="flex flex-col lg:order-first">
-              <h1 className="text-[#1D1C19] text-[32px] font-bold">
-                Fresh spaces, clear minds.
-              </h1>
-
-              <div className="flex flex-col mt-4">
-                <span>
-                  Get a personalized solution to your spaces <br/> 
-                  create unique pieces for you and your home.
-                </span>
-                <br/>
-                <span>Deal with professionals who care.</span>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -190,9 +258,13 @@ export default function Home() {
 
       {/* Sección para contenido adicional */}
       <section className="min-h-screen bg-white">
-        <div className="container mx-auto px-4 py-16">
+        <div className="
+          container mx-auto 
+          px-4 sm:px-6 lg:px-8
+          py-16 sm:py-24
+        ">
           {/* Aquí irá el contenido adicional */}
-          <h2>Contenido adicional</h2>
+          <h2 className="text-3xl font-bold text-gray-900">Contenido adicional</h2>
         </div>
       </section>
     </main>

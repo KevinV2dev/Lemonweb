@@ -2,12 +2,15 @@
 
 import { Toaster } from 'react-hot-toast'
 import SupabaseProvider from './supabase-provider'
+import LenisProvider from './lenis-provider'
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SupabaseProvider>
-      {children}
-      <Toaster position="top-right" />
+      <LenisProvider>
+        {children}
+        <Toaster position="top-right" />
+      </LenisProvider>
     </SupabaseProvider>
   )
 } 
