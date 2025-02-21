@@ -4,7 +4,9 @@ import { useState, useEffect } from 'react';
 import { productService } from '@/supabase/products';
 import type { Product, Category } from '@/types';
 import { ProductCard } from '@/app/components/catalog/ProductCard';
+import { ProductCardSkeleton } from '@/app/components/catalog/ProductCardSkeleton';
 import { CatalogFilters } from '@/app/components/catalog/CatalogFilters';
+import { Navbar } from '@/app/components/ui/navbar';
 
 export default function CatalogPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -12,6 +14,7 @@ export default function CatalogPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [isFiltering, setIsFiltering] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -32,32 +35,66 @@ export default function CatalogPage() {
     loadData();
   }, []);
 
+  // Efecto para mostrar skeleton durante el filtrado
+  useEffect(() => {
+    setIsFiltering(true);
+    const filterTimer = setTimeout(() => {
+      setIsFiltering(false);
+    }, 300);
+
+    return () => clearTimeout(filterTimer);
+  }, [searchTerm, selectedCategory]);
+
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = !selectedCategory || product.category?.id.toString() === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
+  const renderSkeletons = () => {
+    return Array(8).fill(0).map((_, index) => (
+      <ProductCardSkeleton key={`skeleton-${index}`} />
+    ));
+  };
+
   if (isLoading) {
     return (
-      <div className="px-[50px] pb-[50px] min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-gray-500">Loading...</div>
+      <div className="min-h-screen">
+        <Navbar alwaysShowBackground />
+        <div className="fixed top-[72px] left-0 right-0 z-40 bg-white shadow-sm">
+          <CatalogFilters 
+            categories={[]}
+            onSearch={() => {}}
+            onCategoryChange={() => {}}
+          />
+        </div>
+        <div className="pt-[172px] px-[50px] pb-[50px]">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {renderSkeletons()}
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="px-[50px] pb-[50px]">
-      <CatalogFilters 
-        categories={categories}
-        onSearch={setSearchTerm}
-        onCategoryChange={setSelectedCategory}
-      />
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {filteredProducts.map((product) => (
-          <ProductCard key={product.id} {...product} />
-        ))}
+    <div className="min-h-screen">
+      <Navbar alwaysShowBackground />
+      <div className="fixed top-[72px] left-0 right-0 z-40 bg-white shadow-sm">
+        <CatalogFilters 
+          categories={categories}
+          onSearch={setSearchTerm}
+          onCategoryChange={setSelectedCategory}
+        />
+      </div>
+      <div className="pt-[172px] px-[50px] pb-[50px]">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {isFiltering ? renderSkeletons() : (
+            filteredProducts.map((product) => (
+              <ProductCard key={product.id} {...product} />
+            ))
+          )}
+        </div>
       </div>
     </div>
   );

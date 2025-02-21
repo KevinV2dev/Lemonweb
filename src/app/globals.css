@@ -10,9 +10,16 @@
   margin: 0;
 }
 
+:root {
+  --foreground: #1D1C19;
+  --background: #EFEFF0;
+}
+
 body {
   min-height: 100vh;
   overflow-x: hidden;
+  color: var(--foreground);
+  background: var(--background);
 }
 
 /* Ocultar scrollbar pero mantener funcionalidad */

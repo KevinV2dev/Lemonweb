@@ -7,7 +7,11 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
-export const Navbar = () => {
+interface NavbarProps {
+  alwaysShowBackground?: boolean;
+}
+
+export const Navbar = ({ alwaysShowBackground = false }: NavbarProps) => {
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(false);
@@ -32,7 +36,7 @@ export const Navbar = () => {
       <div className={`
         absolute inset-0 bg-white
         transition-transform duration-500 ease-in-out origin-top
-        ${hasScrolled ? 'scale-y-100' : 'scale-y-0'}
+        ${alwaysShowBackground ? 'scale-y-100' : hasScrolled ? 'scale-y-100' : 'scale-y-0'}
       `} />
       <div className="w-full py-4 px-[50px] items-center flex-row relative">
         <div className="flex w-full items-center gap-4 justify-between">

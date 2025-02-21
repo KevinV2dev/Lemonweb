@@ -49,9 +49,9 @@ export function CatalogFilters({ categories, onSearch, onCategoryChange }: Catal
   };
 
   return (
-    <div className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
-      <div className="container px-4">
-        <div className="flex items-center h-16">
+    <div className="bg-white border-b border-gray-200">
+      <div className="px-[50px]">
+        <div className="flex items-center h-[72px]">
           {/* Buscador */}
           <div className="relative w-64 flex-shrink-0">
             <input
