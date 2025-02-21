@@ -48,7 +48,7 @@ export default function Home() {
         <div className="absolute inset-0 w-full -z-10">
           {/* Imagen móvil (default y < 640px) */}
           <Image
-            src="public/backgrounds/hero.png"
+            src="/backgrounds/hero.png"
             alt="Hero background"
             fill
             priority
