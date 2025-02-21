@@ -48,7 +48,7 @@ export default function Home() {
         <div className="absolute inset-0 w-full -z-10">
           {/* Imagen móvil (default y < 640px) */}
           <Image
-            src="/backgrounds/hero.png"
+            src="/backgrounds/herobg.png"
             alt="Hero background"
             fill
             priority
@@ -64,7 +64,7 @@ export default function Home() {
 
           {/* Imagen tablet (640px - 1024px) */}
           <Image
-            src="/backgrounds/hero.png"
+            src="/backgrounds/herobg.png"
             alt="Hero background"
             fill
             priority
@@ -79,7 +79,7 @@ export default function Home() {
 
           {/* Imagen desktop (≥ 1024px) */}
           <Image
-            src="/backgrounds/hero.png"
+            src="/backgrounds/herobg.png"
             alt="Hero background"
             fill
             priority
