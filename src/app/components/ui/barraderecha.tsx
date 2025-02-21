@@ -16,7 +16,7 @@ export default function barraderecha() {
         <div 
           className={`
             absolute top-0 right-0 h-full
-            bg-black overflow-hidden
+            bg-night-lemon overflow-hidden
             will-change-transform
             transition-all duration-700 ease-out
             ${isExpanded ? 'w-[383px]' : 'w-8'}
@@ -75,30 +75,30 @@ export default function barraderecha() {
 
       {/* Iconos sociales */}
       <div className="flex flex-col gap-4 items-end">
-        <a href="https://wa.me/+2816849852" target='_Blank' className="bg-black p-2 transition-colors group">
+        <a href="https://wa.me/+2816849852" target='_Blank' className="bg-night-lemon w-[32px] h-[32px] flex justify-center items-center transition-colors group">
           <Image 
             src="/icons/ws.svg" 
             alt="WhatsApp" 
-            width={21} 
-            height={20}
+            width={16} 
+            height={16}
             className="transition-colors group-hover:filter group-hover:brightness-0 group-hover:invert-[.65] group-hover:sepia-[.85] group-hover:saturate-[1000%] group-hover:hue-rotate-[5deg]"
           />
         </a>
-        <a href="#" className="bg-black p-2 transition-colors group">
+        <a href="#" className="bg-night-lemon w-[32px] h-[32px] flex justify-center items-center transition-colors group">
           <Image 
             src="/icons/email.svg" 
             alt="Email" 
-            width={21} 
-            height={20}
+            width={16} 
+            height={16}
             className="transition-colors group-hover:filter group-hover:brightness-0 group-hover:invert-[.65] group-hover:sepia-[.85] group-hover:saturate-[1000%] group-hover:hue-rotate-[5deg]"
           />
         </a>
-        <a href="https://www.instagram.com/" target='_Blank' className="bg-black p-2 transition-colors group">
+        <a href="https://www.instagram.com/" target='_Blank' className="bg-night-lemon w-[32px] h-[32px] flex justify-center items-center transition-colors group">
           <Image 
             src="/icons/instagram.svg" 
             alt="Instagram" 
-            width={21} 
-            height={20}
+            width={16} 
+            height={16}
             className="transition-colors group-hover:filter group-hover:brightness-0 group-hover:invert-[.65] group-hover:sepia-[.85] group-hover:saturate-[1000%] group-hover:hue-rotate-[5deg]"
           />
         </a>
