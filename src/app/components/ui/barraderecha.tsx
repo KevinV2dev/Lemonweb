@@ -22,7 +22,7 @@ export default function barraderecha() {
         `}>
           {/* Logo */}
           <Image 
-            src="/icons/group 1.svg" 
+            src="/icons/simbolo.svg" 
             alt="Lemon" 
             width={21} 
             height={20}
@@ -59,7 +59,7 @@ export default function barraderecha() {
       <div className="flex flex-col gap-4 items-end">
         <a href="https://wa.me/+2816849852" target='_Blank' className="bg-black p-2 hover:bg-gray-900 transition-colors">
           <Image 
-            src="/icons/WhatsApp.svg" 
+            src="/icons/ws.svg" 
             alt="WhatsApp" 
             width={21} 
             height={20}
