@@ -4,12 +4,22 @@
 import { NavLink } from '@/app/components/ui/NavLink';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
 export const Navbar = () => {
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [hasScrolled, setHasScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setHasScrolled(window.scrollY > 50);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const links = [
     { href: '/', label: 'Home', exact: true },
@@ -18,8 +28,13 @@ export const Navbar = () => {
   ];
 
   return (
-    <nav className="w-full bg-transparent relative z-50">
-      <div className="w-full py-6 px-[50px] items-center flex-row bg-transparent">
+    <nav className="fixed top-0 left-0 right-0 z-50">
+      <div className={`
+        absolute inset-0 bg-white
+        transition-transform duration-500 ease-in-out origin-top
+        ${hasScrolled ? 'scale-y-100' : 'scale-y-0'}
+      `} />
+      <div className="w-full py-4 px-[50px] items-center flex-row relative">
         <div className="flex w-full items-center gap-4 justify-between">
           {/* Logo y navegación agrupados */}
           <div className="flex items-center">
