@@ -107,7 +107,7 @@ export function CatalogFilters({ categories, onSearch, onCategoryChange }: Catal
             <div className="relative">
               <input
                 type="text"
-                placeholder="Buscar productos..."
+                placeholder="Search products..."
                 onChange={(e) => onSearch(e.target.value)}
                 className="w-full h-10 pl-10 pr-4 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
               />
@@ -133,7 +133,7 @@ export function CatalogFilters({ categories, onSearch, onCategoryChange }: Catal
                   }
                 `}
               >
-                Todas las categorías
+                All Categories
               </button>
 
               {/* Categorías visibles */}
@@ -168,7 +168,7 @@ export function CatalogFilters({ categories, onSearch, onCategoryChange }: Catal
                     }
                   `}
                 >
-                  Más
+                  More
                   <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
 

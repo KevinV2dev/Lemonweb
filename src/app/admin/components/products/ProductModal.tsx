@@ -53,7 +53,7 @@ export function ProductModal({ isOpen, onClose, product, onSave }: ProductModalP
       const data = await productService.getCategories();
       setCategories(data);
     } catch (error) {
-      toast.error('Error al cargar las categorías');
+      toast.error('Error loading categories');
       console.error(error);
     }
   };
@@ -71,7 +71,7 @@ export function ProductModal({ isOpen, onClose, product, onSave }: ProductModalP
     try {
       let imageUrl = formData.main_image;
 
-      // Si hay una nueva imagen seleccionada, súbela primero
+      // If there's a new image selected, upload it first
       if (selectedImage) {
         imageUrl = await productService.uploadProductImage(selectedImage);
       }
@@ -92,11 +92,11 @@ export function ProductModal({ isOpen, onClose, product, onSave }: ProductModalP
         ? await productService.updateProduct(product.id, productData)
         : await productService.createProduct(productData);
 
-      toast.success(product ? 'Producto actualizado' : 'Producto creado');
+      toast.success(product ? 'Product updated' : 'Product created');
       onSave(savedProduct);
       onClose();
     } catch (error) {
-      toast.error('Error al guardar el producto');
+      toast.error('Error saving product');
       console.error(error);
     } finally {
       setIsLoading(false);
@@ -114,7 +114,7 @@ export function ProductModal({ isOpen, onClose, product, onSave }: ProductModalP
       >
         <div className="flex justify-between items-center p-6 border-b">
           <h2 className="text-xl font-semibold">
-            {product ? 'Editar Producto' : 'Nuevo Producto'}
+            {product ? 'Edit Product' : 'New Product'}
           </h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
             <X className="w-5 h-5" />
@@ -123,11 +123,11 @@ export function ProductModal({ isOpen, onClose, product, onSave }: ProductModalP
 
         <form onSubmit={handleSubmit} className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Columna izquierda */}
+            {/* Left column */}
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nombre
+                  Name
                 </label>
                 <input
                   type="text"
@@ -140,7 +140,7 @@ export function ProductModal({ isOpen, onClose, product, onSave }: ProductModalP
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Descripción
+                  Description
                 </label>
                 <textarea
                   value={formData.description}
@@ -152,7 +152,7 @@ export function ProductModal({ isOpen, onClose, product, onSave }: ProductModalP
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Categoría
+                  Category
                 </label>
                 <div className="flex gap-2">
                   <select
@@ -161,7 +161,7 @@ export function ProductModal({ isOpen, onClose, product, onSave }: ProductModalP
                     className="flex-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black"
                     required
                   >
-                    <option value="">Seleccionar categoría</option>
+                    <option value="">Select category</option>
                     {categories.map((category) => (
                       <option key={category.id} value={category.id}>
                         {category.name}
@@ -171,7 +171,7 @@ export function ProductModal({ isOpen, onClose, product, onSave }: ProductModalP
                   <button
                     type="button"
                     onClick={async () => {
-                      const categoryName = prompt('Nombre de la nueva categoría:');
+                      const categoryName = prompt('Enter new category name:');
                       if (categoryName) {
                         try {
                           const newCategory = await productService.createCategory({
@@ -185,9 +185,9 @@ export function ProductModal({ isOpen, onClose, product, onSave }: ProductModalP
                           });
                           await loadCategories();
                           setFormData(prev => ({ ...prev, category_id: newCategory.id.toString() }));
-                          toast.success('Categoría creada correctamente');
+                          toast.success('Category created successfully');
                         } catch (error) {
-                          toast.error('Error al crear la categoría');
+                          toast.error('Error creating category');
                           console.error(error);
                         }
                       }
@@ -207,15 +207,15 @@ export function ProductModal({ isOpen, onClose, product, onSave }: ProductModalP
                   className="h-4 w-4 text-black focus:ring-black border-gray-300 rounded"
                 />
                 <label className="ml-2 block text-sm text-gray-900">
-                  Producto activo
+                  Active product
                 </label>
               </div>
             </div>
 
-            {/* Columna derecha - Imagen principal */}
+            {/* Right column - Main Image */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Imagen Principal
+                Main Image
               </label>
               <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
                 {imagePreview ? (
@@ -257,7 +257,7 @@ export function ProductModal({ isOpen, onClose, product, onSave }: ProductModalP
                     <Upload className="mx-auto h-12 w-12 text-gray-400" />
                     <div className="flex text-sm text-gray-600">
                       <label className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500">
-                        <span>Subir imagen</span>
+                        <span>Upload image</span>
                         <input
                           type="file"
                           className="sr-only"
@@ -281,14 +281,14 @@ export function ProductModal({ isOpen, onClose, product, onSave }: ProductModalP
               onClick={onClose}
               className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md"
             >
-              Cancelar
+              Cancel
             </button>
             <button
               type="submit"
               disabled={isLoading}
               className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 disabled:opacity-50"
             >
-              {isLoading ? 'Guardando...' : product ? 'Actualizar' : 'Crear'}
+              {isLoading ? 'Saving...' : product ? 'Update' : 'Create'}
             </button>
           </div>
         </form>

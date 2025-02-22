@@ -24,7 +24,7 @@ export function CategoryManager() {
       const data = await productService.getCategories();
       setCategories(data);
     } catch (error) {
-      toast.error('Error al cargar las categorías');
+      toast.error('Error loading categories');
       console.error('Error loading categories:', error);
     } finally {
       setIsLoading(false);
@@ -38,50 +38,45 @@ export function CategoryManager() {
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
 
-    // Actualizar el orden en el estado
     const updatedCategories = items.map((item, index) => ({
       ...item,
       display_order: index
     }));
 
-    // Actualizar el estado inmediatamente para mejor UX
     setCategories(updatedCategories);
 
     try {
-      // Actualizar en la base de datos
       await productService.reorderCategories(
         updatedCategories.map((cat, index) => ({
           id: cat.id,
           display_order: index
         }))
       );
-      toast.success('Orden actualizado correctamente');
+      toast.success('Order updated successfully');
     } catch (error) {
       console.error('Error saving category order:', error);
-      toast.error('Error al guardar el orden');
-      // Recargar las categorías en caso de error
+      toast.error('Error saving order');
       loadCategories();
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (confirm('¿Estás seguro de que quieres eliminar esta categoría?')) {
+    if (confirm('Are you sure you want to delete this category?')) {
       try {
         await productService.deleteCategory(id);
-        // Actualizar el estado local eliminando la categoría
         setCategories(categories.filter(cat => cat.id !== id));
-        toast.success('Categoría eliminada correctamente');
+        toast.success('Category deleted successfully');
       } catch (error) {
         console.error('Error deleting category:', error);
-        toast.error('Error al eliminar la categoría');
+        toast.error('Error deleting category');
       }
     }
   };
 
   const handleCreateSuccess = async () => {
-    await loadCategories(); // Recargar las categorías
-    setIsModalOpen(false); // Cerrar el modal
-    toast.success('Categoría creada correctamente');
+    await loadCategories();
+    setIsModalOpen(false);
+    toast.success('Category created successfully');
   };
 
   if (isLoading) {
@@ -95,13 +90,13 @@ export function CategoryManager() {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Categorías</h2>
+        <h2 className="text-2xl font-bold">Categories</h2>
         <button
           onClick={() => setIsModalOpen(true)}
           className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800"
         >
           <Plus className="w-4 h-4" />
-          Nueva Categoría
+          New Category
         </button>
       </div>
 
@@ -137,13 +132,13 @@ export function CategoryManager() {
                       
                       <div className="flex items-center gap-4">
                         <span className="text-sm text-gray-400">
-                          Orden: {category.display_order}
+                          Order: {category.display_order}
                         </span>
                         <button
                           onClick={() => handleDelete(category.id)}
                           className="text-sm text-red-600 hover:text-red-800"
                         >
-                          Eliminar
+                          Delete
                         </button>
                       </div>
                     </div>

@@ -21,7 +21,7 @@ export function Sidebar({ currentSection, onSectionChange }: SidebarProps) {
       await supabase.auth.signOut()
       router.push('/admin/login')
     } catch (error) {
-      console.error('Error al cerrar sesión:', error)
+      console.error('Error during logout:', error)
     }
   }
 
@@ -101,7 +101,7 @@ export function Sidebar({ currentSection, onSectionChange }: SidebarProps) {
       icon: <Package className="w-5 h-5" />
     },
     {
-      title: 'Categorías',
+      title: 'Categories',
       id: 'categories',
       icon: <FolderTree className="w-5 h-5" />
     }
@@ -202,7 +202,7 @@ export function Sidebar({ currentSection, onSectionChange }: SidebarProps) {
           className="flex items-center w-full px-4 py-2.5 text-sm rounded-lg text-red-600 hover:bg-red-50 transition-colors mt-4"
         >
           <LogOut className="w-5 h-5" />
-          <span className="ml-3 font-medium">Cerrar Sesión</span>
+          <span className="ml-3 font-medium">Logout</span>
         </motion.button>
       </div>
     </div>

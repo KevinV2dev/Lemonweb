@@ -58,7 +58,7 @@ export default function ProductPage({ params }: ProductPageProps) {
               onClick={() => router.back()}
               className="mt-4 text-night-lemon hover:text-night-lemon/80 transition-colors"
             >
-              ← Volver al catálogo
+              ← back
             </button>
           </div>
         </div>

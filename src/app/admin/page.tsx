@@ -103,15 +103,15 @@ function AdminPageContent() {
       setAppointments(data || [])
       setFilteredAppointments(data || [])
     } catch (error) {
-      console.error('Error al cargar citas:', error)
-      toast.error('Error al cargar las citas')
+      console.error('Error loading appointments:', error)
+      toast.error('Error loading appointments')
     } finally {
       setIsLoading(false)
     }
   }
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar esta cita?')) {
+    if (window.confirm('Are you sure you want to delete this appointment?')) {
       try {
         const { error } = await supabase
           .from('appointments')
@@ -121,10 +121,10 @@ function AdminPageContent() {
         if (error) throw error
 
         setAppointments(prev => prev.filter(app => app.id !== id))
-        toast.success('Cita eliminada correctamente')
+        toast.success('Appointment deleted successfully')
       } catch (error) {
-        console.error('Error al eliminar:', error)
-        toast.error('Error al eliminar la cita')
+        console.error('Error deleting:', error)
+        toast.error('Error deleting appointment')
       }
     }
   }
@@ -145,11 +145,11 @@ function AdminPageContent() {
   const getStatusText = (status: string) => {
     switch (status) {
       case 'pending':
-        return 'Pendiente'
+        return 'Pending'
       case 'completed':
-        return 'Completada'
+        return 'Completed'
       case 'cancelled':
-        return 'Cancelada'
+        return 'Cancelled'
       default:
         return status
     }
@@ -465,9 +465,8 @@ function AdminPageContent() {
   const handleProductSave = async (product: Product) => {
     setIsProductModalOpen(false);
     setSelectedProduct(undefined);
-    // Forzar recarga de productos
     setShouldRefreshProducts(true);
-    toast.success(product.id ? 'Producto actualizado' : 'Producto creado');
+    toast.success(product.id ? 'Product updated successfully' : 'Product created successfully');
   };
 
   return (
@@ -479,7 +478,7 @@ function AdminPageContent() {
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
         <header className="bg-white border-b border-gray-200 h-16 flex items-center px-8">
-          <h1 className="text-xl font-semibold text-night-lemon">Panel de Administración</h1>
+          <h1 className="text-xl font-semibold text-night-lemon">Admin Panel</h1>
         </header>
 
         {/* Contenido principal con scroll */}
@@ -516,10 +515,10 @@ function AdminPageContent() {
               )
               setIsModalOpen(false)
               setSelectedAppointment(null)
-              toast.success('Cita actualizada correctamente')
+              toast.success('Appointment updated successfully')
             } catch (error) {
-              console.error('Error al actualizar:', error)
-              toast.error('Error al actualizar la cita')
+              console.error('Error updating:', error)
+              toast.error('Error updating appointment')
             }
           }}
         />

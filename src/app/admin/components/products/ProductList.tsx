@@ -46,7 +46,7 @@ export function ProductList({ onEdit, shouldRefresh, onRefreshComplete }: Produc
       setProducts(data);
       setFilteredProducts(data);
     } catch (error) {
-      toast.error('Error al cargar los productos');
+      toast.error('Error loading products');
       console.error(error);
     } finally {
       setIsLoading(false);
@@ -56,12 +56,10 @@ export function ProductList({ onEdit, shouldRefresh, onRefreshComplete }: Produc
   const filterProducts = () => {
     let filtered = [...products];
 
-    // Filtrar por categoría
     if (selectedCategory) {
       filtered = filtered.filter(product => product.category_id === selectedCategory);
     }
 
-    // Filtrar por término de búsqueda
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
       filtered = filtered.filter(product => 
@@ -78,10 +76,10 @@ export function ProductList({ onEdit, shouldRefresh, onRefreshComplete }: Produc
   const handleDelete = async (productId: number) => {
     try {
       await productService.deleteProduct(productId);
-      toast.success('Producto eliminado correctamente');
+      toast.success('Product deleted successfully');
       loadProducts();
     } catch (error) {
-      toast.error('Error al eliminar el producto');
+      toast.error('Error deleting product');
       console.error(error);
     }
   };
@@ -96,15 +94,13 @@ export function ProductList({ onEdit, shouldRefresh, onRefreshComplete }: Produc
 
   return (
     <>
-      {/* Filtros */}
       <div className="p-4 space-y-4">
         <div className="flex gap-4">
-          {/* Búsqueda */}
           <div className="flex-1">
             <div className="relative">
               <input
                 type="text"
-                placeholder="Buscar productos..."
+                placeholder="Search products..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
@@ -113,13 +109,12 @@ export function ProductList({ onEdit, shouldRefresh, onRefreshComplete }: Produc
             </div>
           </div>
 
-          {/* Filtro de categorías */}
           <select
             value={selectedCategory || ''}
             onChange={(e) => setSelectedCategory(e.target.value ? Number(e.target.value) : null)}
             className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
           >
-            <option value="">Todas las categorías</option>
+            <option value="">All categories</option>
             {categories.map((category) => (
               <option key={category.id} value={category.id}>
                 {category.name}
@@ -128,31 +123,29 @@ export function ProductList({ onEdit, shouldRefresh, onRefreshComplete }: Produc
           </select>
         </div>
 
-        {/* Contador de resultados */}
         <div className="text-sm text-gray-500">
-          {filteredProducts.length} producto{filteredProducts.length !== 1 ? 's' : ''} encontrado{filteredProducts.length !== 1 ? 's' : ''}
+          {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'} found
         </div>
       </div>
 
-      {/* Tabla de productos */}
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Imagen
+                Image
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Nombre
+                Name
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Categoría
+                Category
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Estado
+                Status
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Acciones
+                Actions
               </th>
             </tr>
           </thead>
@@ -180,7 +173,7 @@ export function ProductList({ onEdit, shouldRefresh, onRefreshComplete }: Produc
                       ? 'bg-green-100 text-green-800'
                       : 'bg-red-100 text-red-800'
                   }`}>
-                    {product.active ? 'Activo' : 'Inactivo'}
+                    {product.active ? 'Active' : 'Inactive'}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -188,18 +181,21 @@ export function ProductList({ onEdit, shouldRefresh, onRefreshComplete }: Produc
                     <button
                       onClick={() => setSelectedProductId(product.id)}
                       className="text-gray-600 hover:text-gray-900"
+                      title="View details"
                     >
                       <Eye className="w-5 h-5" />
                     </button>
                     <button
                       onClick={() => onEdit(product)}
                       className="text-blue-600 hover:text-blue-900"
+                      title="Edit product"
                     >
                       <Edit className="w-5 h-5" />
                     </button>
                     <button
                       onClick={() => handleDelete(product.id)}
                       className="text-red-600 hover:text-red-900"
+                      title="Delete product"
                     >
                       <Trash className="w-5 h-5" />
                     </button>

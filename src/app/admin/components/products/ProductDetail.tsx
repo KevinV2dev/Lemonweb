@@ -30,7 +30,7 @@ export function ProductDetail({ productId, onClose, onEdit, onDelete }: ProductD
       const data = await productService.getProductById(productId);
       setProduct(data);
     } catch (error) {
-      toast.error('Error al cargar el producto');
+      toast.error('Error loading product');
       console.error(error);
     } finally {
       setIsLoading(false);
@@ -57,14 +57,14 @@ export function ProductDetail({ productId, onClose, onEdit, onDelete }: ProductD
         className="bg-white rounded-lg w-full max-w-4xl shadow-xl overflow-hidden"
       >
         <div className="flex justify-between items-center p-6 border-b">
-          <h2 className="text-2xl font-semibold">{product.name}</h2>
+          <h2 className="text-2xl font-semibold">Product Details</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
             <X className="w-6 h-6" />
           </button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
-          {/* Galería de imágenes */}
+          {/* Image Gallery */}
           <div className="space-y-4">
             <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
               <Image
@@ -97,24 +97,24 @@ export function ProductDetail({ productId, onClose, onEdit, onDelete }: ProductD
             )}
           </div>
 
-          {/* Detalles del producto */}
+          {/* Product Details */}
           <div className="space-y-6">
             <div>
-              <h3 className="text-lg font-medium">Descripción</h3>
-              <p className="text-gray-600 mt-2">{product.description || 'Sin descripción'}</p>
+              <h3 className="text-lg font-medium">Description</h3>
+              <p className="text-gray-600 mt-2">{product.description || 'No description'}</p>
             </div>
 
             <div>
-              <h3 className="text-lg font-medium">Categoría</h3>
+              <h3 className="text-lg font-medium">Category</h3>
               <p className="text-gray-600 mt-2">{product.category?.name}</p>
             </div>
 
             <div>
-              <h3 className="text-lg font-medium">Estado</h3>
+              <h3 className="text-lg font-medium">Status</h3>
               <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
                 product.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
               }`}>
-                {product.active ? 'Activo' : 'Inactivo'}
+                {product.active ? 'Active' : 'Inactive'}
               </span>
             </div>
 
@@ -124,18 +124,18 @@ export function ProductDetail({ productId, onClose, onEdit, onDelete }: ProductD
                 className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800"
               >
                 <Edit className="w-4 h-4" />
-                Editar
+                Edit
               </button>
               <button
                 onClick={() => {
-                  if (window.confirm('¿Estás seguro de que quieres eliminar este producto?')) {
+                  if (window.confirm('Are you sure you want to delete this product?')) {
                     onDelete(product.id);
                   }
                 }}
                 className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
               >
                 <Trash className="w-4 h-4" />
-                Eliminar
+                Delete
               </button>
             </div>
           </div>

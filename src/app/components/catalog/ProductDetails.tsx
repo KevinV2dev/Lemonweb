@@ -20,7 +20,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
           className="bg-night-lemon text-white px-4 py-2 text-sm flex items-center gap-2 group hover:bg-night-lemon/90 transition-colors"
         >
           <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-          Volver al catálogo
+          Back
         </button>
       </div>
 
