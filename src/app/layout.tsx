@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   title: "Lemon - Furniture Design and Manufacturing",
   description: "We design and manufacture high-quality furniture. Specialists in custom furniture, interior design, and tailored solutions.",
   keywords: 'furniture, interior design, furniture manufacturing, custom furniture, furniture design',
-  authors: [{ name: 'Lemon' }],
+  authors: [{ name: 'Lemon', url: 'mailto:lemonsimplify@gmail.com' }],
   metadataBase: new URL('https://lemon.com'),
   openGraph: {
     title: 'Lemon - Furniture Design and Manufacturing',

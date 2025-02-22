@@ -65,8 +65,8 @@ export function ContactFooter() {
               Leave your details and we'll get back to you.
             </p>
             <div className="space-y-2">
-              <p>Email: info@lemon.com</p>
-              <p>Phone: 281-684-9852</p>
+              <p>Email: lemonsimplify@gmail.com</p>
+              <p>Phone: +1-801-661-8481</p>
             </div>
           </div>
 

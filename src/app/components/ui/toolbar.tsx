@@ -94,7 +94,7 @@ export default function barraDerecha() {
       {/* Iconos sociales */}
       <div className="flex flex-col gap-4 items-end">
         <a 
-          href="https://wa.me/+2816849852" 
+          href="https://wa.me/+18016618481" 
           target='_Blank' 
           className="
             bg-night-lemon
@@ -113,7 +113,7 @@ export default function barraDerecha() {
           />
         </a>
         <a 
-          href="#" 
+          href="mailto:lemonsimplify@gmail.com" 
           className="
             bg-night-lemon
             w-8 h-8
