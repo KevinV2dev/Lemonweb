@@ -207,7 +207,7 @@ export default function Home() {
           w-full
           h-full
         ">
-            <div className="flex flex-col gap-4 max-w-[1440px] mt-16">
+            <div className="flex flex-col gap-4 max-w-[1440px] mt-12">
               {/* Carrusel - Primero en móvil */}
               <motion.div 
                 className="
