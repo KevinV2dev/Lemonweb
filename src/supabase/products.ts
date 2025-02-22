@@ -36,7 +36,6 @@ export const productService = {
         additional_images:product_images(*),
         category:category_id(*)
       `)
-      .eq('active', true)
       .order('created_at', { ascending: false });
 
     if (productsError) throw productsError;

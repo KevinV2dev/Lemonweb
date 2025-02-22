@@ -94,19 +94,25 @@ function AdminPageContent() {
 
   async function fetchAppointments() {
     try {
-      const { data, error } = await supabase
-      .from('appointments')
-      .select('*')
-      .order('appointment_date', { ascending: true })
+      setIsLoading(true);
+      const { data: appointmentsData, error: appointmentsError } = await supabase
+        .from('appointments')
+        .select('*')
+        .order('appointment_date', { ascending: true });
 
-      if (error) throw error
-      setAppointments(data || [])
-      setFilteredAppointments(data || [])
+      if (appointmentsError) {
+        console.error('Error cargando citas:', appointmentsError);
+        toast.error('Error al cargar las citas');
+        return;
+      }
+
+      setAppointments(appointmentsData || []);
+      setFilteredAppointments(appointmentsData || []);
     } catch (error) {
-      console.error('Error loading appointments:', error)
-      toast.error('Error loading appointments')
+      console.error('Error general:', error);
+      toast.error('Error al cargar las citas');
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 

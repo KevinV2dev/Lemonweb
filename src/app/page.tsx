@@ -448,7 +448,7 @@ export default function Home() {
               </div>
               <div className="space-y-6 lg:pl-4">
                 <h3 className="text-2xl sm:text-3xl font-bold text-white">
-                  We create spaces for you, and only you.
+                We design a place to you, to your home, to your peace.
                 </h3>
                 <p className="text-heaven-lemon max-w-[600px]">
                   Experience the perfect blend of functionality and aesthetics with our custom storage solutions. 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { createBrowserClient } from '@/supabase/client'
+import { supabase } from '@/supabase/client'
 import { useRouter } from 'next/navigation'
 import { toast } from 'react-hot-toast'
 
@@ -10,37 +10,32 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const supabase = createBrowserClient()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (loading) return
     setLoading(true)
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
-        password,
+        password
       })
 
       if (error) throw error
 
-      if (data.session) {
-        // Verificar si el usuario es admin
-        const { data: adminData, error: adminError } = await supabase
-          .from('admins')
-          .select('*')
-          .eq('email', email)
-          .single()
-
-        if (adminError || !adminData) {
-          await supabase.auth.signOut()
-          throw new Error('No tienes permisos de administrador')
-        }
-
-        router.push('/admin')
+      if (data?.user?.email === 'lemonsimplify@gmail.com') {
+        // Solo mostramos el toast una vez y redirigimos
         toast.success('Inicio de sesión exitoso')
+        window.location.href = '/admin'
+      } else {
+        // Si no es el admin correcto, cerramos sesión
+        await supabase.auth.signOut()
+        throw new Error('No tienes permisos de administrador')
       }
+      
     } catch (error: any) {
+      console.error('Error en login:', error)
       toast.error(error.message || 'Error al iniciar sesión')
     } finally {
       setLoading(false)
@@ -103,7 +98,7 @@ export default function LoginPage() {
                 disabled={loading}
                 className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black"
               >
-                {loading ? 'Cargando...' : 'Iniciar sesión'}
+                {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
               </button>
             </div>
           </form>

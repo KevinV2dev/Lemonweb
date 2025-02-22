@@ -1,112 +1,47 @@
--- Eliminar todas las políticas existentes
-DROP POLICY IF EXISTS "Cualquiera puede crear citas" ON appointments;
-DROP POLICY IF EXISTS "Permitir crear citas sin autenticación" ON appointments;
-DROP POLICY IF EXISTS "Solo admins pueden ver todas las citas" ON appointments;
-DROP POLICY IF EXISTS "Los clientes solo pueden ver sus propias citas" ON appointments;
-DROP POLICY IF EXISTS "Solo super admin puede gestionar admins" ON admins;
-DROP POLICY IF EXISTS "Solo admins pueden actualizar citas" ON appointments;
-DROP POLICY IF EXISTS "Solo admins pueden eliminar citas" ON appointments;
+-- Desactivar RLS temporalmente para todas las tablas
+ALTER TABLE admins DISABLE ROW LEVEL SECURITY;
+ALTER TABLE appointments DISABLE ROW LEVEL SECURITY;
+ALTER TABLE products DISABLE ROW LEVEL SECURITY;
+ALTER TABLE categories DISABLE ROW LEVEL SECURITY;
+ALTER TABLE product_category_relations DISABLE ROW LEVEL SECURITY;
+ALTER TABLE product_images DISABLE ROW LEVEL SECURITY;
+ALTER TABLE product_colors DISABLE ROW LEVEL SECURITY;
+ALTER TABLE product_materials DISABLE ROW LEVEL SECURITY;
+ALTER TABLE product_color_relations DISABLE ROW LEVEL SECURITY;
+ALTER TABLE product_material_relations DISABLE ROW LEVEL SECURITY;
+ALTER TABLE product_attributes DISABLE ROW LEVEL SECURITY;
 
--- Habilitar RLS en las tablas
-ALTER TABLE appointments ENABLE ROW LEVEL SECURITY;
-ALTER TABLE admins ENABLE ROW LEVEL SECURITY;
+-- Eliminar TODAS las políticas existentes
+DROP POLICY IF EXISTS "enable_read_for_authenticated" ON admins;
+DROP POLICY IF EXISTS "enable_write_for_main_admin" ON admins;
+DROP POLICY IF EXISTS "admin_delete_policy" ON admins;
+DROP POLICY IF EXISTS "admin_insert_policy" ON admins;
+DROP POLICY IF EXISTS "admin_select_policy" ON admins;
+DROP POLICY IF EXISTS "admin_update_policy" ON admins;
+DROP POLICY IF EXISTS "Enable all access for authenticated users" ON admins;
+DROP POLICY IF EXISTS "Enable read for admins" ON admins;
+DROP POLICY IF EXISTS "Enable write for admins" ON admins;
+DROP POLICY IF EXISTS "admins puedenver er la tabla de admins" ON admins;
 
--- Política para permitir crear citas a cualquiera
-CREATE POLICY "Permitir crear citas sin autenticación"
-ON appointments
-FOR INSERT
-TO public
-WITH CHECK (true);
-
--- Política para que los admins vean todas las citas
-CREATE POLICY "Solo admins pueden ver todas las citas"
-ON appointments
-FOR SELECT
-TO authenticated
-USING (
-  EXISTS (
-    SELECT 1 FROM admins
-    WHERE admins.email = auth.email()
-  )
-);
-
--- Política para que los clientes vean sus propias citas
-CREATE POLICY "Los clientes solo pueden ver sus propias citas"
-ON appointments
-FOR SELECT
-TO public
-USING (client_email = auth.email() OR auth.email() IS NULL);
-
--- Política para que solo el super admin gestione admins
-CREATE POLICY "Solo super admin puede gestionar admins"
-ON admins
-TO authenticated
-USING (auth.email() = 'vegaskevin46@gmail.com')
-WITH CHECK (auth.email() = 'vegaskevin46@gmail.com');
-
--- Política para que los admins puedan actualizar citas
-CREATE POLICY "Solo admins pueden actualizar citas"
-ON appointments
-FOR UPDATE
-TO authenticated
-USING (
-  EXISTS (
-    SELECT 1 FROM admins
-    WHERE admins.email = auth.email()
-  )
-)
-WITH CHECK (
-  EXISTS (
-    SELECT 1 FROM admins
-    WHERE admins.email = auth.email()
-  )
-);
-
--- Política para que los admins puedan eliminar citas
-CREATE POLICY "Solo admins pueden eliminar citas"
-ON appointments
-FOR DELETE
-TO authenticated
-USING (
-  EXISTS (
-    SELECT 1 FROM admins
-    WHERE admins.email = auth.email()
-  )
-);
-
--- Asegurar que el admin principal existe
+-- Asegurar que existe el admin principal
 INSERT INTO admins (email)
-VALUES ('vegaskevin46@gmail.com')
+VALUES ('lemonsimplify@gmail.com')
 ON CONFLICT (email) DO NOTHING;
 
--- Modificar la tabla appointments para usar un ID secuencial simple
-ALTER TABLE appointments 
-DROP COLUMN IF EXISTS appointment_id;
+-- Habilitar RLS
+ALTER TABLE admins ENABLE ROW LEVEL SECURITY;
 
--- Crear una secuencia para el ID
-CREATE SEQUENCE IF NOT EXISTS appointment_id_seq START 1;
+-- Crear una única política simple para lectura
+CREATE POLICY "enable_read_for_authenticated"
+ON admins
+FOR SELECT
+TO authenticated
+USING (true);
 
--- Añadir la columna appointment_id con formato de 4 dígitos
-ALTER TABLE appointments 
-ADD COLUMN IF NOT EXISTS appointment_id TEXT 
-DEFAULT LPAD(nextval('appointment_id_seq')::TEXT, 4, '0');
-
--- Asegurarnos que el appointment_id sea único
-ALTER TABLE appointments 
-ADD CONSTRAINT unique_appointment_id UNIQUE (appointment_id);
-
--- Eliminar cualquier constraint único en appointment_date si existe
-ALTER TABLE appointments 
-DROP CONSTRAINT IF EXISTS unique_appointment_date;
-
--- Todo lo relacionado con configuración y citas
-CREATE TABLE IF NOT EXISTS appointments (
-  id SERIAL PRIMARY KEY,
-  -- ... resto de campos
-);
-
-CREATE TABLE IF NOT EXISTS admins (
-  email TEXT PRIMARY KEY
-);
-
--- ... resto de tablas y políticas relacionadas con configuración
+-- Crear una política para escritura solo para el admin principal
+CREATE POLICY "enable_write_for_main_admin"
+ON admins
+FOR ALL
+TO authenticated
+USING (auth.email() = 'lemonsimplify@gmail.com')
+WITH CHECK (auth.email() = 'lemonsimplify@gmail.com');

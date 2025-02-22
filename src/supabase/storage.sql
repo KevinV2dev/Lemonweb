@@ -3,51 +3,38 @@ INSERT INTO storage.buckets (id, name, public)
 VALUES ('products', 'products', true)
 ON CONFLICT (id) DO NOTHING;
 
--- Política para permitir lectura pública
+-- Políticas para storage.objects
+DROP POLICY IF EXISTS "Imágenes públicamente accesibles" ON storage.objects;
+DROP POLICY IF EXISTS "Solo admins pueden subir imágenes" ON storage.objects;
+DROP POLICY IF EXISTS "Solo admins pueden actualizar imágenes" ON storage.objects;
+DROP POLICY IF EXISTS "Solo admins pueden eliminar imágenes" ON storage.objects;
+
+-- Política para lectura pública
 CREATE POLICY "Imágenes públicamente accesibles"
-ON storage.objects FOR SELECT
+ON storage.objects
+FOR SELECT
 TO public
-USING (bucket_id = 'products');
+USING (true);
 
--- Política para permitir que los administradores suban archivos
+-- Política para subir imágenes (solo admins)
 CREATE POLICY "Solo admins pueden subir imágenes"
-ON storage.objects FOR INSERT
+ON storage.objects
+FOR INSERT
 TO authenticated
-WITH CHECK (
-  bucket_id = 'products' AND
-  EXISTS (
-    SELECT 1 FROM public.admins
-    WHERE admins.email = auth.email()
-  )
-);
+USING (auth.email() IN (SELECT email FROM admins))
+WITH CHECK (auth.email() IN (SELECT email FROM admins));
 
--- Política para permitir que los administradores actualicen archivos
+-- Política para actualizar imágenes (solo admins)
 CREATE POLICY "Solo admins pueden actualizar imágenes"
-ON storage.objects FOR UPDATE
+ON storage.objects
+FOR UPDATE
 TO authenticated
-USING (
-  bucket_id = 'products' AND
-  EXISTS (
-    SELECT 1 FROM public.admins
-    WHERE admins.email = auth.email()
-  )
-)
-WITH CHECK (
-  bucket_id = 'products' AND
-  EXISTS (
-    SELECT 1 FROM public.admins
-    WHERE admins.email = auth.email()
-  )
-);
+USING (auth.email() IN (SELECT email FROM admins))
+WITH CHECK (auth.email() IN (SELECT email FROM admins));
 
--- Política para permitir que los administradores eliminen archivos
+-- Política para eliminar imágenes (solo admins)
 CREATE POLICY "Solo admins pueden eliminar imágenes"
-ON storage.objects FOR DELETE
+ON storage.objects
+FOR DELETE
 TO authenticated
-USING (
-  bucket_id = 'products' AND
-  EXISTS (
-    SELECT 1 FROM public.admins
-    WHERE admins.email = auth.email()
-  )
-); 
+USING (auth.email() IN (SELECT email FROM admins)); 

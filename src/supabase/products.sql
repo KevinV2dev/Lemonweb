@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS categories (
   name TEXT NOT NULL UNIQUE,
   slug TEXT NOT NULL UNIQUE,
   parent_id INTEGER REFERENCES categories(id) ON DELETE SET NULL,
-  type TEXT CHECK (type IN ('category', 'subcategory', 'material')),
+  type TEXT DEFAULT 'category',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
   display_order INTEGER DEFAULT 0
 );
@@ -21,7 +21,6 @@ CREATE TABLE IF NOT EXISTS products (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
 );
 
--- Nueva tabla para relaciones múltiples entre productos y categorías
 CREATE TABLE IF NOT EXISTS product_category_relations (
   id SERIAL PRIMARY KEY,
   product_id INTEGER REFERENCES products(id) ON DELETE CASCADE,
@@ -30,7 +29,6 @@ CREATE TABLE IF NOT EXISTS product_category_relations (
   UNIQUE(product_id, category_id)
 );
 
--- Tabla para imágenes adicionales de productos
 CREATE TABLE IF NOT EXISTS product_images (
   id SERIAL PRIMARY KEY,
   product_id INTEGER REFERENCES products(id) ON DELETE CASCADE,
@@ -39,69 +37,99 @@ CREATE TABLE IF NOT EXISTS product_images (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
 );
 
--- Tabla para materiales
-CREATE TABLE IF NOT EXISTS materials (
+CREATE TABLE IF NOT EXISTS product_colors (
   id SERIAL PRIMARY KEY,
-  name TEXT NOT NULL UNIQUE,
-  slug TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  hex_code TEXT,
   description TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
 );
 
--- Eliminar políticas existentes antes de crearlas nuevamente
+CREATE TABLE IF NOT EXISTS product_materials (
+  id SERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
+);
+
+CREATE TABLE IF NOT EXISTS product_color_relations (
+  product_id INTEGER REFERENCES products(id) ON DELETE CASCADE,
+  color_id INTEGER REFERENCES product_colors(id) ON DELETE CASCADE,
+  PRIMARY KEY (product_id, color_id)
+);
+
+CREATE TABLE IF NOT EXISTS product_material_relations (
+  product_id INTEGER REFERENCES products(id) ON DELETE CASCADE,
+  material_id INTEGER REFERENCES product_materials(id) ON DELETE CASCADE,
+  PRIMARY KEY (product_id, material_id)
+);
+
+CREATE TABLE IF NOT EXISTS product_attributes (
+  id SERIAL PRIMARY KEY,
+  product_id INTEGER REFERENCES products(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  value TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
+);
+
+-- Función para actualizar updated_at
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = TIMEZONE('utc', NOW());
+  RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+-- Trigger para actualizar updated_at
+DROP TRIGGER IF EXISTS update_products_updated_at ON products;
+CREATE TRIGGER update_products_updated_at
+  BEFORE UPDATE
+  ON products
+  FOR EACH ROW
+  EXECUTE PROCEDURE update_updated_at_column();
+
+-- Crear índices para optimizar las consultas
+CREATE INDEX IF NOT EXISTS idx_categories_display_order ON categories(display_order);
+CREATE INDEX IF NOT EXISTS idx_product_category_relations ON product_category_relations(product_id, category_id);
+CREATE INDEX IF NOT EXISTS idx_product_images_product_id ON product_images(product_id);
+CREATE INDEX IF NOT EXISTS idx_product_attributes_product_id ON product_attributes(product_id);
+
+-- Políticas para productos y categorías
 DROP POLICY IF EXISTS "Productos públicos visibles para todos" ON products;
 DROP POLICY IF EXISTS "Solo admins pueden gestionar productos" ON products;
 DROP POLICY IF EXISTS "Relaciones de categorías visibles para todos" ON product_category_relations;
 DROP POLICY IF EXISTS "Solo admins pueden gestionar relaciones de categorías" ON product_category_relations;
 
--- Políticas RLS
-ALTER TABLE products ENABLE ROW LEVEL SECURITY;
-ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
-ALTER TABLE product_images ENABLE ROW LEVEL SECURITY;
-ALTER TABLE materials ENABLE ROW LEVEL SECURITY;
-ALTER TABLE product_category_relations ENABLE ROW LEVEL SECURITY;
-
--- Políticas para productos
+-- Política para lectura pública de productos
 CREATE POLICY "Productos públicos visibles para todos"
 ON products
 FOR SELECT
 TO public
 USING (active = true);
 
+-- Política para gestión de productos (solo admins)
 CREATE POLICY "Solo admins pueden gestionar productos"
 ON products
 FOR ALL
 TO authenticated
-USING (
-  EXISTS (
-    SELECT 1 FROM admins
-    WHERE admins.email = auth.email()
-  )
-);
+USING (auth.email() IN (SELECT email FROM admins))
+WITH CHECK (auth.email() IN (SELECT email FROM admins));
 
--- Políticas para product_category_relations
+-- Política para lectura pública de relaciones de categorías
 CREATE POLICY "Relaciones de categorías visibles para todos"
 ON product_category_relations
 FOR SELECT
 TO public
-USING (
-  EXISTS (
-    SELECT 1 FROM products
-    WHERE products.id = product_category_relations.product_id
-    AND products.active = true
-  )
-);
+USING (true);
 
+-- Política para gestión de relaciones de categorías (solo admins)
 CREATE POLICY "Solo admins pueden gestionar relaciones de categorías"
 ON product_category_relations
 FOR ALL
 TO authenticated
-USING (
-  EXISTS (
-    SELECT 1 FROM admins
-    WHERE admins.email = auth.email()
-  )
-);
+USING (auth.email() IN (SELECT email FROM admins))
+WITH CHECK (auth.email() IN (SELECT email FROM admins));
 
 -- Migración de datos existentes
 DO $$ 
@@ -142,25 +170,6 @@ BEGIN
     CREATE INDEX idx_product_category_relations ON product_category_relations(product_id, category_id);
   END IF;
 END $$;
-
--- Función para actualizar updated_at
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.updated_at = TIMEZONE('utc', NOW());
-  RETURN NEW;
-END;
-$$ language 'plpgsql';
-
--- Eliminar trigger existente si existe
-DROP TRIGGER IF EXISTS update_products_updated_at ON products;
-
--- Trigger para actualizar updated_at
-CREATE TRIGGER update_products_updated_at
-  BEFORE UPDATE
-  ON products
-  FOR EACH ROW
-  EXECUTE PROCEDURE update_updated_at_column();
 
 -- Añadir la columna type si no existe
 DO $$ 
