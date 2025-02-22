@@ -239,6 +239,7 @@ export const Navbar = ({ alwaysShowBackground = false }: NavbarProps) => {
                         animate={{ x: 0, opacity: 1 }}
                         transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.2 }}
                         className="w-full bg-night-lemon text-white px-6 py-3 flex items-center justify-center gap-2 group"
+                        onClick={() => router.push('/appointment')}
                       >
                         BOOK A CALL
                         <span className="transform transition-transform duration-200 ease-out group-hover:translate-x-[2px] group-hover:-translate-y-[2px]">
