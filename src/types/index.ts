@@ -35,6 +35,7 @@ export interface Product {
   description?: string;
   category_id?: number;
   category?: Category;
+  categories?: Category[];
   main_image: string;
   active: boolean;
   created_at?: string;

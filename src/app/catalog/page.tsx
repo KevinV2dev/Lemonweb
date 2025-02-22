@@ -14,6 +14,7 @@ export default function CatalogPage() {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isFiltering, setIsFiltering] = useState(false);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -44,11 +45,32 @@ export default function CatalogPage() {
     return () => clearTimeout(filterTimer);
   }, [searchTerm, selectedCategory]);
 
-  const filteredProducts = products.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = !selectedCategory || product.category?.id.toString() === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  useEffect(() => {
+    filterProducts();
+  }, [products, searchTerm, selectedCategory]);
+
+  const filterProducts = () => {
+    let filtered = [...products];
+
+    if (selectedCategory) {
+      filtered = filtered.filter(product => 
+        product.category?.id.toString() === selectedCategory || 
+        product.categories?.some(cat => cat.id.toString() === selectedCategory)
+      );
+    }
+
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      filtered = filtered.filter(product => 
+        product.name.toLowerCase().includes(searchLower) ||
+        (product.description?.toLowerCase() || '').includes(searchLower) ||
+        product.category?.name?.toLowerCase().includes(searchLower) ||
+        product.categories?.some(cat => cat.name.toLowerCase().includes(searchLower))
+      );
+    }
+
+    setFilteredProducts(filtered);
+  };
 
   const renderSkeletons = () => {
     return Array(8).fill(0).map((_, index) => (

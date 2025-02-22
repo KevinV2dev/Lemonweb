@@ -58,8 +58,12 @@ export const Navbar = ({ alwaysShowBackground = false }: NavbarProps) => {
       <div className="w-full px-6 py-8 items-center flex-row relative">
         <div className="flex w-full items-center gap-2 sm:gap-4 justify-between">
           {/* Logo y navegación agrupados */}
-          <div className="flex items-center">
-            <div>
+          <div 
+          
+          className="flex items-center cursor-pointer">
+            <div
+            onClick={() => router.push('/')}
+            >
               <Image
                 src='/icons/Group.svg'
                 width={114} 

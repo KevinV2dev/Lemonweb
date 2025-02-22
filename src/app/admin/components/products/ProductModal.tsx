@@ -12,16 +12,19 @@ interface ProductModalProps {
   isOpen: boolean;
   onClose: () => void;
   product?: Product;
-  onSave: (product: Product) => void;
+  onSave: () => void;
 }
 
 export function ProductModal({ isOpen, onClose, product, onSave }: ProductModalProps) {
   const initialFormState = {
-    name: '',
-    description: '',
-    category_id: '',
-    main_image: '',
-    active: true
+    name: product?.name || '',
+    slug: product?.slug || '',
+    description: product?.description || '',
+    category_id: product?.category_id?.toString() || '',
+    selectedCategories: product?.categories || [],
+    main_image: product?.main_image || '',
+    active: product?.active ?? true,
+    additional_images: product?.additional_images || []
   };
 
   const [formData, setFormData] = useState(initialFormState);
@@ -29,16 +32,21 @@ export function ProductModal({ isOpen, onClose, product, onSave }: ProductModalP
   const [isLoading, setIsLoading] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     loadCategories();
     if (product) {
+      console.log('Producto recibido en modal:', product);
       setFormData({
         name: product.name,
+        slug: product.slug,
         description: product.description || '',
         category_id: product.category_id?.toString() || '',
+        selectedCategories: product.categories || [],
         main_image: product.main_image,
-        active: product.active
+        active: product.active,
+        additional_images: product.additional_images || []
       });
       setImagePreview(product.main_image);
     } else {
@@ -51,6 +59,7 @@ export function ProductModal({ isOpen, onClose, product, onSave }: ProductModalP
   const loadCategories = async () => {
     try {
       const data = await productService.getCategories();
+      console.log('Categorías cargadas:', data);
       setCategories(data);
     } catch (error) {
       toast.error('Error loading categories');
@@ -66,38 +75,68 @@ export function ProductModal({ isOpen, onClose, product, onSave }: ProductModalP
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    if (isLoading) return;
 
     try {
-      let imageUrl = formData.main_image;
+      setIsLoading(true);
+      console.log('Estado del formulario antes de enviar:', formData);
 
-      // If there's a new image selected, upload it first
+      let mainImageUrl = formData.main_image;
       if (selectedImage) {
-        imageUrl = await productService.uploadProductImage(selectedImage);
+        setIsUploading(true);
+        try {
+          mainImageUrl = await productService.uploadProductImage(selectedImage);
+        } catch (error) {
+          console.error('Error uploading image:', error);
+          toast.error('Error uploading image');
+          return;
+        } finally {
+          setIsUploading(false);
+        }
       }
 
       const productData = {
-        ...formData,
-        main_image: imageUrl,
-        category_id: parseInt(formData.category_id),
-        slug: formData.name
+        name: formData.name,
+        slug: formData.slug || formData.name
           .toLowerCase()
           .normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, '')
-          .replace(/[^a-z0-9]+/g, '-')
-          .replace(/^-+|-+$/g, '')
+          .replace(/[\u0300-\u036f]/g, '')  // Eliminar acentos
+          .replace(/[^a-z0-9-]/g, '-')      // Reemplazar caracteres no alfanuméricos por guiones
+          .replace(/-+/g, '-')              // Reemplazar múltiples guiones por uno solo
+          .replace(/^-+|-+$/g, ''),         // Eliminar guiones al inicio y final
+        description: formData.description,
+        main_image: mainImageUrl,
+        active: formData.active,
+        category_id: formData.selectedCategories[0]?.id,
+        categories: formData.selectedCategories.map(cat => ({
+          id: cat.id,
+          name: cat.name,
+          slug: cat.slug,
+          display_order: cat.display_order
+        }))
       };
 
-      const savedProduct = product
-        ? await productService.updateProduct(product.id, productData)
-        : await productService.createProduct(productData);
+      console.log('Datos del producto a enviar:', productData);
 
-      toast.success(product ? 'Product updated' : 'Product created');
-      onSave(savedProduct);
+      if (product) {
+        if (selectedImage && product.main_image) {
+          try {
+            await productService.deleteProductImage(product.main_image);
+          } catch (error) {
+            console.error('Error deleting old image:', error);
+          }
+        }
+        await productService.updateProduct(product.id, productData);
+      } else {
+        await productService.createProduct(productData as Omit<Product, 'id' | 'created_at' | 'updated_at'>);
+      }
+
+      toast.success(product ? 'Product updated successfully' : 'Product created successfully');
       onClose();
+      if (onSave) onSave();
     } catch (error) {
+      console.error('Error saving product:', error);
       toast.error('Error saving product');
-      console.error(error);
     } finally {
       setIsLoading(false);
     }
@@ -141,61 +180,153 @@ export function ProductModal({ isOpen, onClose, product, onSave }: ProductModalP
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Description
+                  <span className="text-xs text-gray-500 ml-2">
+                    (Use • al inicio de línea para crear viñetas)
+                  </span>
                 </label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black"
-                  rows={4}
-                />
+                <div className="relative">
+                  <div className="absolute right-2 top-2 flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const textarea = document.getElementById('description-textarea') as HTMLTextAreaElement;
+                        if (!textarea) return;
+
+                        const start = textarea.selectionStart;
+                        const end = textarea.selectionEnd;
+                        const text = textarea.value;
+                        
+                        // Si estamos al inicio de una línea o es la primera línea
+                        const isStartOfLine = start === 0 || text.charAt(start - 1) === '\n';
+                        const newText = isStartOfLine
+                          ? text.slice(0, start) + '• ' + text.slice(end)
+                          : text.slice(0, start) + '\n• ' + text.slice(end);
+
+                        setFormData({ ...formData, description: newText });
+                        
+                        // Ajustar el cursor después de la viñeta
+                        setTimeout(() => {
+                          const newPosition = isStartOfLine ? start + 2 : start + 3;
+                          textarea.setSelectionRange(newPosition, newPosition);
+                          textarea.focus();
+                        }, 0);
+                      }}
+                      className="p-1.5 bg-gray-100 hover:bg-gray-200 rounded text-gray-600 text-sm flex items-center gap-1"
+                    >
+                      <span className="text-lg leading-none">•</span>
+                      <span className="text-xs">Añadir viñeta</span>
+                    </button>
+                  </div>
+                  <textarea
+                    id="description-textarea"
+                    value={formData.description}
+                    onChange={(e) => {
+                      let value = e.target.value;
+                      // Convertir • al inicio de línea en una viñeta real
+                      value = value.split('\n').map(line => {
+                        if (line.trim().startsWith('•')) {
+                          return line;
+                        } else if (line.trim().startsWith('*')) {
+                          return line.replace('*', '•');
+                        }
+                        return line;
+                      }).join('\n');
+                      setFormData({ ...formData, description: value });
+                    }}
+                    className="w-full px-3 py-2 pr-28 border rounded-md focus:outline-none focus:ring-2 focus:ring-black resize-y overflow-y-scroll whitespace-pre-wrap min-h-[150px] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent hover:[&::-webkit-scrollbar-thumb]:bg-gray-400"
+                    rows={6}
+                    placeholder="Describe el producto...&#10;• Usa viñetas para características&#10;• Cada línea que empiece con • o * se convertirá en viñeta"
+                  />
+                </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Category
+                  Categories
                 </label>
-                <div className="flex gap-2">
-                  <select
-                    value={formData.category_id}
-                    onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
-                    className="flex-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black"
-                    required
-                  >
-                    <option value="">Select category</option>
-                    {categories.map((category) => (
-                      <option key={category.id} value={category.id}>
-                        {category.name}
-                      </option>
+                <div className="space-y-2">
+                  <div className="flex flex-wrap gap-2">
+                    {formData.selectedCategories.map((category) => (
+                      <div 
+                        key={category.id}
+                        className="bg-gray-100 px-3 py-1 flex items-center gap-2"
+                      >
+                        <span>{category.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => setFormData(prev => ({
+                            ...prev,
+                            selectedCategories: prev.selectedCategories.filter(c => c.id !== category.id)
+                          }))}
+                          className="text-gray-500 hover:text-gray-700"
+                        >
+                          ×
+                        </button>
+                      </div>
                     ))}
-                  </select>
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      const categoryName = prompt('Enter new category name:');
-                      if (categoryName) {
-                        try {
-                          const newCategory = await productService.createCategory({
-                            name: categoryName,
-                            slug: categoryName
-                              .toLowerCase()
-                              .normalize('NFD')
-                              .replace(/[\u0300-\u036f]/g, '')
-                              .replace(/[^a-z0-9]+/g, '-')
-                              .replace(/^-+|-+$/g, '')
-                          });
-                          await loadCategories();
-                          setFormData(prev => ({ ...prev, category_id: newCategory.id.toString() }));
-                          toast.success('Category created successfully');
-                        } catch (error) {
-                          toast.error('Error creating category');
-                          console.error(error);
+                  </div>
+
+                  <div className="flex gap-2">
+                    <select
+                      value=""
+                      onChange={(e) => {
+                        const categoryId = parseInt(e.target.value);
+                        if (categoryId) {
+                          const category = categories.find(c => c.id === categoryId);
+                          if (category && !formData.selectedCategories.some(c => c.id === category.id)) {
+                            setFormData(prev => ({
+                              ...prev,
+                              selectedCategories: [...prev.selectedCategories, category]
+                            }));
+                          }
                         }
+                        e.target.value = "";
+                      }}
+                      className="flex-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                    >
+                      <option value="">Add category</option>
+                      {categories
+                        .filter(category => !formData.selectedCategories.some(c => c.id === category.id))
+                        .map((category) => (
+                          <option key={category.id} value={category.id}>
+                            {category.name}
+                          </option>
+                        ))
                       }
-                    }}
-                    className="px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
-                  >
-                    <Plus className="w-5 h-5" />
-                  </button>
+                    </select>
+                    
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const categoryName = prompt('Enter new category name:');
+                        if (categoryName) {
+                          try {
+                            const newCategory = await productService.createCategory({
+                              name: categoryName,
+                              slug: categoryName
+                                .toLowerCase()
+                                .normalize('NFD')
+                                .replace(/[\u0300-\u036f]/g, '')
+                                .replace(/[^a-z0-9]+/g, '-')
+                                .replace(/^-+|-+$/g, '')
+                            });
+                            await loadCategories();
+                            setFormData(prev => ({
+                              ...prev,
+                              selectedCategories: [...prev.selectedCategories, newCategory]
+                            }));
+                            toast.success('Category created successfully');
+                          } catch (error) {
+                            toast.error('Error creating category');
+                            console.error(error);
+                          }
+                        }
+                      }}
+                      className="px-3 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    >
+                      <Plus className="w-5 h-5" />
+                    </button>
+                  </div>
                 </div>
               </div>
 

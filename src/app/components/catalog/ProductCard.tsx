@@ -38,26 +38,46 @@ export function ProductCard(product: Product) {
 
         {/* Contenido */}
         <div className="relative">
-          {/* Título y categoría */}
-          <div className="p-4 pb-0">
-            <div className="flex items-center gap-2 mb-2">
-              <h3 className="text-lg font-medium text-night-lemon">
-                {product.name}
-              </h3>
-              <span className="text-silver-lemon">•</span>
-              {product.category?.name && (
-                <Badge>{product.category.name}</Badge>
+          {/* Categorías */}
+          <div className="p-4 pb-2">
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              {product.categories ? (
+                <>
+                  {product.categories.slice(0, 3).map((category) => (
+                    <Badge key={category.id}>
+                      {category.name}
+                    </Badge>
+                  ))}
+                  {product.categories.length > 3 && (
+                    <Badge>
+                      +{product.categories.length - 3}
+                    </Badge>
+                  )}
+                </>
+              ) : product.category?.name && (
+                <Badge>
+                  {product.category.name}
+                </Badge>
               )}
             </div>
 
-            {/* Descripción */}
-            <p className="text-sm text-silver-lemon mb-4 line-clamp-2">
-              {product.description}
-            </p>
+            {/* Título y descripción */}
+            <div className="space-y-2">
+              <h3 className="text-lg font-medium text-night-lemon line-clamp-1">
+                {product.name}
+              </h3>
+              <p className="text-sm text-silver-lemon line-clamp-2 whitespace-pre-line">
+                {product.description?.split('\n')
+                  .filter(line => line.trim())
+                  .slice(0, 2)
+                  .map(line => line.trim().startsWith('•') ? line.trim().slice(1).trim() : line)
+                  .join(' • ')}
+              </p>
+            </div>
           </div>
 
           {/* Botones */}
-          <div className="flex items-start gap-3 justify-end relative z-20">
+          <div className="p-4 pt-2 flex items-start gap-3 justify-end relative z-20">
             <button 
               onClick={() => router.push(`/catalog/${product.slug}`)}
               className="bg-night-lemon text-white px-4 py-2 text-sm cursor-pointer hover:bg-night-lemon/90 transition-colors"

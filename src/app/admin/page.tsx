@@ -462,11 +462,11 @@ function AdminPageContent() {
     router.push(`/admin?section=${section}`, { scroll: false });
   };
 
-  const handleProductSave = async (product: Product) => {
+  const handleProductSave = async () => {
     setIsProductModalOpen(false);
     setSelectedProduct(undefined);
     setShouldRefreshProducts(true);
-    toast.success(product.id ? 'Product updated successfully' : 'Product created successfully');
+    toast.success('Product saved successfully');
   };
 
   return (

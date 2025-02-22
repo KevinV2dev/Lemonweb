@@ -21,6 +21,15 @@ CREATE TABLE IF NOT EXISTS products (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
 );
 
+-- Nueva tabla para relaciones múltiples entre productos y categorías
+CREATE TABLE IF NOT EXISTS product_category_relations (
+  id SERIAL PRIMARY KEY,
+  product_id INTEGER REFERENCES products(id) ON DELETE CASCADE,
+  category_id INTEGER REFERENCES categories(id) ON DELETE CASCADE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
+  UNIQUE(product_id, category_id)
+);
+
 -- Tabla para imágenes adicionales de productos
 CREATE TABLE IF NOT EXISTS product_images (
   id SERIAL PRIMARY KEY,
@@ -39,11 +48,18 @@ CREATE TABLE IF NOT EXISTS materials (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
 );
 
+-- Eliminar políticas existentes antes de crearlas nuevamente
+DROP POLICY IF EXISTS "Productos públicos visibles para todos" ON products;
+DROP POLICY IF EXISTS "Solo admins pueden gestionar productos" ON products;
+DROP POLICY IF EXISTS "Relaciones de categorías visibles para todos" ON product_category_relations;
+DROP POLICY IF EXISTS "Solo admins pueden gestionar relaciones de categorías" ON product_category_relations;
+
 -- Políticas RLS
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE product_images ENABLE ROW LEVEL SECURITY;
 ALTER TABLE materials ENABLE ROW LEVEL SECURITY;
+ALTER TABLE product_category_relations ENABLE ROW LEVEL SECURITY;
 
 -- Políticas para productos
 CREATE POLICY "Productos públicos visibles para todos"
@@ -61,23 +77,23 @@ USING (
     SELECT 1 FROM admins
     WHERE admins.email = auth.email()
   )
-)
-WITH CHECK (
+);
+
+-- Políticas para product_category_relations
+CREATE POLICY "Relaciones de categorías visibles para todos"
+ON product_category_relations
+FOR SELECT
+TO public
+USING (
   EXISTS (
-    SELECT 1 FROM admins
-    WHERE admins.email = auth.email()
+    SELECT 1 FROM products
+    WHERE products.id = product_category_relations.product_id
+    AND products.active = true
   )
 );
 
--- Políticas para categorías
-CREATE POLICY "Categorías visibles para todos"
-ON categories
-FOR SELECT
-TO public
-USING (true);
-
-CREATE POLICY "Solo admins pueden gestionar categorías"
-ON categories
+CREATE POLICY "Solo admins pueden gestionar relaciones de categorías"
+ON product_category_relations
 FOR ALL
 TO authenticated
 USING (
@@ -85,61 +101,47 @@ USING (
     SELECT 1 FROM admins
     WHERE admins.email = auth.email()
   )
-)
-WITH CHECK (
-  EXISTS (
-    SELECT 1 FROM admins
-    WHERE admins.email = auth.email()
-  )
 );
 
--- Políticas para imágenes de productos
-CREATE POLICY "Imágenes visibles para todos"
-ON product_images
-FOR SELECT
-TO public
-USING (true);
+-- Migración de datos existentes
+DO $$ 
+BEGIN
+  -- Migrar las relaciones existentes de category_id a la nueva tabla
+  INSERT INTO product_category_relations (product_id, category_id)
+  SELECT id, category_id
+  FROM products
+  WHERE category_id IS NOT NULL
+  ON CONFLICT DO NOTHING;
+END $$;
 
-CREATE POLICY "Solo admins pueden gestionar imágenes"
-ON product_images
-FOR ALL
-TO authenticated
-USING (
-  EXISTS (
-    SELECT 1 FROM admins
-    WHERE admins.email = auth.email()
-  )
-)
-WITH CHECK (
-  EXISTS (
-    SELECT 1 FROM admins
-    WHERE admins.email = auth.email()
-  )
-);
+-- Actualizar los registros existentes con un orden basado en el nombre
+UPDATE categories
+SET display_order = subquery.row_num
+FROM (
+  SELECT id, ROW_NUMBER() OVER (ORDER BY name) as row_num
+  FROM categories
+) as subquery
+WHERE categories.id = subquery.id;
 
--- Políticas para materiales
-CREATE POLICY "Materiales visibles para todos"
-ON materials
-FOR SELECT
-TO public
-USING (true);
+-- Añadir índices para optimizar las consultas
+DO $$ 
+BEGIN 
+  IF NOT EXISTS (
+    SELECT 1 
+    FROM pg_indexes 
+    WHERE indexname = 'idx_categories_display_order'
+  ) THEN
+    CREATE INDEX idx_categories_display_order ON categories(display_order);
+  END IF;
 
-CREATE POLICY "Solo admins pueden gestionar materiales"
-ON materials
-FOR ALL
-TO authenticated
-USING (
-  EXISTS (
-    SELECT 1 FROM admins
-    WHERE admins.email = auth.email()
-  )
-)
-WITH CHECK (
-  EXISTS (
-    SELECT 1 FROM admins
-    WHERE admins.email = auth.email()
-  )
-);
+  IF NOT EXISTS (
+    SELECT 1 
+    FROM pg_indexes 
+    WHERE indexname = 'idx_product_category_relations'
+  ) THEN
+    CREATE INDEX idx_product_category_relations ON product_category_relations(product_id, category_id);
+  END IF;
+END $$;
 
 -- Función para actualizar updated_at
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -150,6 +152,9 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
+-- Eliminar trigger existente si existe
+DROP TRIGGER IF EXISTS update_products_updated_at ON products;
+
 -- Trigger para actualizar updated_at
 CREATE TRIGGER update_products_updated_at
   BEFORE UPDATE
@@ -157,14 +162,30 @@ CREATE TRIGGER update_products_updated_at
   FOR EACH ROW
   EXECUTE PROCEDURE update_updated_at_column();
 
+-- Añadir la columna type si no existe
+DO $$ 
+BEGIN 
+  IF NOT EXISTS (
+    SELECT 1 
+    FROM information_schema.columns 
+    WHERE table_name = 'categories' 
+    AND column_name = 'type'
+  ) THEN
+    ALTER TABLE categories
+    ADD COLUMN type TEXT;
+  END IF;
+END $$;
+
 -- Actualizar las categorías existentes para establecer el tipo
 UPDATE categories 
 SET type = 'category' 
 WHERE type IS NULL;
 
--- Hacer que el campo type sea NOT NULL después de la actualización
+-- Hacer que el campo type sea NOT NULL y añadir el CHECK constraint
 ALTER TABLE categories 
-ALTER COLUMN type SET NOT NULL;
+ALTER COLUMN type SET NOT NULL,
+ADD CONSTRAINT categories_type_check 
+CHECK (type IN ('category', 'subcategory', 'material'));
 
 -- Añadir la columna display_order si no existe
 DO $$ 

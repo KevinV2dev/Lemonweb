@@ -28,33 +28,94 @@ export async function getProduct(slug: string): Promise<Product> {
 
 export const productService = {
   async getProducts() {
-    const { data, error } = await supabase
+    console.log('Iniciando getProducts');
+    const { data: products, error: productsError } = await supabase
       .from('products')
       .select(`
         *,
-        category:categories(*)
+        additional_images:product_images(*),
+        category:category_id(*)
       `)
       .eq('active', true)
       .order('created_at', { ascending: false });
 
-    if (error) throw error;
-    return data;
+    if (productsError) throw productsError;
+    console.log('Productos obtenidos:', products);
+
+    // Obtener todas las categorías para cada producto
+    const productsWithCategories = await Promise.all(products.map(async (product) => {
+      console.log('Obteniendo categorías para producto:', product.id);
+      const { data: categoryRelations, error: categoriesError } = await supabase
+        .from('product_category_relations')
+        .select(`
+          category:category_id(*)
+        `)
+        .eq('product_id', product.id);
+
+      if (categoriesError) throw categoriesError;
+      console.log('Relaciones de categorías obtenidas:', categoryRelations);
+
+      const categories = categoryRelations?.map(relation => relation.category) || [];
+      console.log('Categorías procesadas:', categories);
+
+      return {
+        ...product,
+        categories: categories
+      };
+    }));
+
+    console.log('Productos con categorías:', productsWithCategories);
+    return productsWithCategories;
   },
 
   async getProductBySlug(slug: string) {
-    const { data, error } = await supabase
-      .from('products')
-      .select(`
-        *,
-        category:categories(*),
-        additional_images:product_images(*)
-      `)
-      .eq('slug', slug)
-      .eq('active', true)
-      .single();
+    try {
+      // Decodificar el slug por si viene con caracteres especiales
+      const decodedSlug = decodeURIComponent(slug);
+      
+      const { data: product, error: productError } = await supabase
+        .from('products')
+        .select(`
+          *,
+          additional_images:product_images(*),
+          category:category_id(*)
+        `)
+        .eq('slug', decodedSlug)
+        .eq('active', true)
+        .single();
 
-    if (error) throw error;
-    return data;
+      if (productError) {
+        console.error('Error al obtener el producto:', productError);
+        throw productError;
+      }
+
+      if (!product) {
+        throw new Error('Producto no encontrado');
+      }
+
+      // Obtener las categorías del producto
+      const { data: categoryRelations, error: categoriesError } = await supabase
+        .from('product_category_relations')
+        .select(`
+          category:category_id(*)
+        `)
+        .eq('product_id', product.id);
+
+      if (categoriesError) {
+        console.error('Error al obtener las categorías:', categoriesError);
+        throw categoriesError;
+      }
+
+      const categories = categoryRelations?.map(relation => relation.category) || [];
+
+      return {
+        ...product,
+        categories: categories
+      };
+    } catch (error) {
+      console.error('Error en getProductBySlug:', error);
+      throw error;
+    }
   },
 
   async getCategories() {
@@ -80,50 +141,145 @@ export const productService = {
   },
 
   async createProduct(productData: Omit<Product, 'id' | 'created_at' | 'updated_at'>) {
-    const { data, error } = await supabase
+    console.log('Iniciando createProduct con datos:', productData);
+    const { categories, ...productDataWithoutCategories } = productData;
+    
+    // Insertar el producto
+    const { data: product, error: productError } = await supabase
       .from('products')
-      .insert([productData])
-      .select('*, category:categories(*)')
+      .insert([{
+        ...productDataWithoutCategories,
+        category_id: categories && categories.length > 0 ? categories[0].id : null
+      }])
+      .select()
       .single();
 
-    if (error) throw error;
-    return data;
+    if (productError) throw productError;
+    if (!product) throw new Error('Failed to create product');
+    console.log('Producto creado:', product);
+
+    // Si hay categorías, crear las relaciones
+    if (categories && categories.length > 0) {
+      console.log('Creando relaciones de categorías:', categories);
+      const categoryRelations = categories.map(category => ({
+        product_id: product.id,
+        category_id: category.id
+      }));
+
+      const { error: relationsError } = await supabase
+        .from('product_category_relations')
+        .insert(categoryRelations);
+
+      if (relationsError) {
+        console.error('Error al crear relaciones:', relationsError);
+        throw relationsError;
+      }
+      console.log('Relaciones de categorías creadas:', categoryRelations);
+    }
+
+    // Obtener el producto actualizado con todas sus relaciones
+    const { data: updatedProduct, error: fetchError } = await supabase
+      .from('products')
+      .select(`
+        *,
+        additional_images:product_images(*),
+        category:category_id(*)
+      `)
+      .eq('id', product.id)
+      .single();
+
+    if (fetchError) throw fetchError;
+    if (!updatedProduct) throw new Error('Product not found after creation');
+
+    // Obtener las categorías del producto
+    const { data: categoryRelations, error: categoriesError } = await supabase
+      .from('product_category_relations')
+      .select(`
+        category:category_id(*)
+      `)
+      .eq('product_id', product.id);
+
+    if (categoriesError) throw categoriesError;
+
+    return {
+      ...updatedProduct,
+      categories: categoryRelations?.map(relation => relation.category) || []
+    };
   },
 
   async updateProduct(id: number, productData: Partial<Product>) {
-    try {
-      // Si hay una nueva imagen y había una imagen anterior, eliminamos la anterior
-      if (productData.main_image) {
-        const { data: oldProduct } = await supabase
-          .from('products')
-          .select('main_image')
-          .eq('id', id)
-          .single();
+    const { categories, ...productDataWithoutCategories } = productData;
+    
+    // Actualizar el producto
+    const { error: productError } = await supabase
+      .from('products')
+      .update({
+        ...productDataWithoutCategories,
+        category_id: categories && categories.length > 0 ? categories[0].id : null
+      })
+      .eq('id', id);
 
-        if (oldProduct?.main_image && oldProduct.main_image !== productData.main_image) {
-          const oldFileName = oldProduct.main_image.split('/').pop();
-          if (oldFileName) {
-            await supabase.storage
-              .from('products')
-              .remove([oldFileName]);
-          }
-        }
+    if (productError) throw productError;
+
+    // Si se proporcionaron categorías, actualizar las relaciones
+    if (categories) {
+      console.log('Actualizando categorías para producto:', id, categories);
+      // Eliminar relaciones existentes
+      const { error: deleteError } = await supabase
+        .from('product_category_relations')
+        .delete()
+        .eq('product_id', id);
+
+      if (deleteError) throw deleteError;
+
+      // Crear nuevas relaciones
+      if (categories.length > 0) {
+        const categoryRelations = categories.map(category => ({
+          product_id: id,
+          category_id: category.id
+        }));
+
+        const { error: relationsError } = await supabase
+          .from('product_category_relations')
+          .insert(categoryRelations);
+
+        if (relationsError) throw relationsError;
+        console.log('Nuevas relaciones de categorías creadas:', categoryRelations);
       }
-
-      // Actualizamos el producto
-      const { data, error } = await supabase
-        .from('products')
-        .update(productData)
-        .eq('id', id)
-        .select('*, category:categories(*)')
-        .single();
-
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error('Error in updateProduct:', error);
-      throw error;
     }
+
+    // Obtener el producto actualizado con todas sus relaciones
+    const { data: updatedProduct, error: fetchError } = await supabase
+      .from('products')
+      .select(`
+        *,
+        additional_images:product_images(*),
+        category:category_id(*)
+      `)
+      .eq('id', id)
+      .single();
+
+    if (fetchError) throw fetchError;
+    if (!updatedProduct) throw new Error('Product not found after update');
+
+    // Obtener las categorías del producto
+    const { data: categoryRelations, error: categoriesError } = await supabase
+      .from('product_category_relations')
+      .select(`
+        category:category_id(*)
+      `)
+      .eq('product_id', id);
+
+    if (categoriesError) throw categoriesError;
+    console.log('Relaciones de categorías obtenidas después de actualizar:', categoryRelations);
+
+    const updatedCategories = categoryRelations?.map(relation => relation.category) || [];
+    console.log('Categorías procesadas después de actualizar:', updatedCategories);
+
+    return {
+      ...updatedProduct,
+      categories: updatedCategories
+    };
   },
 
   async deleteProduct(id: number) {
@@ -296,7 +452,7 @@ export const productService = {
       .from('products')
       .select(`
         *,
-        category:categories(*),
+        category:category_id(*),
         additional_images:product_images(*)
       `)
       .eq('id', id)
@@ -377,7 +533,8 @@ export const productService = {
       .from('products')
       .select(`
         *,
-        category:categories(*)
+        category:category_id(*),
+        additional_images:product_images(*)
       `)
       .eq('category_id', categoryId)
       .eq('active', true)

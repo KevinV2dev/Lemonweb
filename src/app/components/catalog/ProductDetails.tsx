@@ -40,9 +40,20 @@ export function ProductDetails({ product }: ProductDetailsProps) {
         <div className="flex flex-col lg:min-h-full">
           <div className="pb-4 border-b border-heaven-lemon">
             <div className="flex flex-col gap-2">
-              {product.category?.name && (
-                <Badge>{product.category.name}</Badge>
-              )}
+              <div className="flex flex-wrap gap-2">
+                {product.category?.name && (
+                  <Badge>
+                    {product.category.name} (Principal)
+                  </Badge>
+                )}
+                {product.categories?.map((category) => (
+                  category.id !== product.category_id && (
+                    <Badge key={category.id}>
+                      {category.name}
+                    </Badge>
+                  )
+                ))}
+              </div>
               <h1 className="text-2xl sm:text-3xl font-bold text-night-lemon">
                 {product.name}
               </h1>
@@ -50,8 +61,17 @@ export function ProductDetails({ product }: ProductDetailsProps) {
           </div>
 
           <div className="mt-4">
-            <p className="text-silver-lemon">
-              {product.description || 'No description available'}
+            <p className="text-silver-lemon whitespace-pre-line">
+              {product.description?.split('\n').map((line, index) => (
+                <span key={index} className="block">
+                  {line.trim().startsWith('•') ? (
+                    <span className="block pl-4 relative">
+                      <span className="absolute left-0">{line.trim()[0]}</span>
+                      {line.trim().slice(1)}
+                    </span>
+                  ) : line}
+                </span>
+              )) || 'No description available'}
             </p>
           </div>
 

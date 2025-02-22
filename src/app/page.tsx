@@ -207,7 +207,7 @@ export default function Home() {
           w-full
           h-full
         ">
-            <div className="flex flex-col gap-4 max-w-[1440px] mt-24">
+            <div className="flex flex-col gap-4 max-w-[1440px] mt-16">
               {/* Carrusel - Primero en móvil */}
               <motion.div 
                 className="
@@ -578,7 +578,7 @@ export default function Home() {
                   speed={-50}
                 >
                   <Image
-                    src="/images/assets/process-1.jpg"
+                    src="/images/assets/process-2.jpg"
                     alt="Our process"
                     fill
                     className="object-cover"

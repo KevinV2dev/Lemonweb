@@ -106,7 +106,20 @@ export function ProductDetail({ productId, onClose, onEdit, onDelete }: ProductD
 
             <div>
               <h3 className="text-lg font-medium">Category</h3>
-              <p className="text-gray-600 mt-2">{product.category?.name}</p>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {product.category?.name && (
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                    {product.category.name} (Principal)
+                  </span>
+                )}
+                {product.categories?.map((category) => (
+                  category.id !== product.category_id && (
+                    <span key={category.id} className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                      {category.name}
+                    </span>
+                  )
+                ))}
+              </div>
             </div>
 
             <div>
