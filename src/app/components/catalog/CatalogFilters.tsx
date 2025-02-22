@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Search, ChevronDown } from 'lucide-react';
-import type { Category } from '@/types';  // Importar tipo desde @/types
-import { motion, AnimatePresence } from 'framer-motion';
+import type { Category } from '@/types';
+
+import { Navbar } from '@/app/components/ui/navbar';
 
 interface CatalogFiltersProps {
   categories: Category[];
@@ -12,126 +13,192 @@ interface CatalogFiltersProps {
 }
 
 export function CatalogFilters({ categories, onSearch, onCategoryChange }: CatalogFiltersProps) {
-  const [visibleCategories, setVisibleCategories] = useState<Category[]>([]);
-  const [overflowCategories, setOverflowCategories] = useState<Category[]>([]);
-  const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [visibleCategories, setVisibleCategories] = useState<Category[]>([]);
+  const [hiddenCategories, setHiddenCategories] = useState<Category[]>([]);
+  
   const containerRef = useRef<HTMLDivElement>(null);
+  const categoriesContainerRef = useRef<HTMLDivElement>(null);
+  const allButtonRef = useRef<HTMLButtonElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    calculateVisibleCategories();
-    window.addEventListener('resize', calculateVisibleCategories);
-    return () => window.removeEventListener('resize', calculateVisibleCategories);
-  }, [categories]);
+  const updateVisibleCategories = () => {
+    if (!containerRef.current || !categoriesContainerRef.current || !allButtonRef.current) return;
 
-  const calculateVisibleCategories = () => {
-    if (!containerRef.current) return;
+    const container = containerRef.current;
+    const categoriesContainer = categoriesContainerRef.current;
+    const allButton = allButtonRef.current;
     
-    const containerWidth = containerRef.current.offsetWidth;
-    const minCategoryWidth = 100; // Ancho mínimo por categoría
-    const maxVisible = Math.floor(containerWidth / minCategoryWidth);
+    // Espacio disponible = ancho total - buscador - padding - botón "All"
+    const searchWidth = 256; // Ancho del buscador
+    const padding = 32; // Padding total (16px * 2)
+    const moreButtonWidth = 100; // Ancho aproximado del botón "Más"
+    const allButtonWidth = allButton.offsetWidth;
+    const gap = 16; // Espacio entre elementos
 
-    // Si hay espacio suficiente, mostrar todas las categorías
-    if (maxVisible >= categories.length) {
-      setVisibleCategories(categories);
-      setOverflowCategories([]);
-    } else {
-      // Si no hay espacio suficiente, mover el resto al menú More
-      setVisibleCategories(categories.slice(0, maxVisible - 1)); // -1 para dejar espacio al botón More
-      setOverflowCategories(categories.slice(maxVisible - 1));
-    }
+    const availableWidth = container.offsetWidth - searchWidth - padding - allButtonWidth - gap - moreButtonWidth;
+
+    // Temporalmente hacemos visibles todas las categorías para medirlas
+    setVisibleCategories(categories);
+    setHiddenCategories([]);
+
+    // Esperamos al siguiente frame para que el DOM se actualice
+    requestAnimationFrame(() => {
+      const buttons = Array.from(categoriesContainer.children) as HTMLElement[];
+      let totalWidth = 0;
+      let lastVisibleIndex = -1;
+
+      // Empezamos desde 1 porque el índice 0 es el botón "All"
+      for (let i = 1; i < buttons.length; i++) {
+        const button = buttons[i];
+        const buttonWidth = button.offsetWidth + gap;
+
+        if (totalWidth + buttonWidth <= availableWidth) {
+          totalWidth += buttonWidth;
+          lastVisibleIndex = i - 1; // Restamos 1 porque empezamos desde el índice 1
+        } else {
+          break;
+        }
+      }
+
+      // Actualizamos las categorías visibles y ocultas
+      setVisibleCategories(categories.slice(0, lastVisibleIndex + 1));
+      setHiddenCategories(categories.slice(lastVisibleIndex + 1));
+    });
   };
 
-  const handleCategoryClick = (categoryId: string) => {
+  useEffect(() => {
+    const observer = new ResizeObserver(() => {
+      updateVisibleCategories();
+    });
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [categories]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleCategorySelect = (categoryId: string) => {
     setSelectedCategory(categoryId);
     onCategoryChange(categoryId);
-    setShowMoreMenu(false);
+    setIsDropdownOpen(false);
   };
 
   return (
-    <div className="bg-white border-b border-gray-200">
-      <div className="px-[50px]">
-        <div className="flex items-center h-[72px]">
+    <header className="w-full bg-white border-b border-gray-200">
+      <Navbar alwaysShowBackground />
+      <div className="max-w-[1920px] mx-auto px-4 sm:px-[50px]">
+        <div ref={containerRef} className="flex items-center h-[72px] gap-4">
           {/* Buscador */}
-          <div className="relative w-64 flex-shrink-0">
-            <input
-              type="text"
-              placeholder="Search products..."
-              onChange={(e) => onSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
-            />
-            <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+          <div className="w-64 flex-shrink-0">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Buscar productos..."
+                onChange={(e) => onSearch(e.target.value)}
+                className="w-full h-10 pl-10 pr-4 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+              />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+            </div>
           </div>
 
-          {/* Categorías */}
-          <div 
-            ref={containerRef}
-            className="flex items-center gap-4 ml-4 overflow-x-hidden flex-grow"
-          >
-            <button
-              onClick={() => handleCategoryClick('')}
-              className={`px-3 py-1.5 rounded-full text-sm transition-all whitespace-nowrap flex-shrink-0 ${
-                selectedCategory === ''
-                  ? 'bg-black text-white' 
-                  : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
-              }`}
+          {/* Contenedor de categorías */}
+          <div className="flex-1 flex items-center gap-4 min-w-0">
+            <div 
+              ref={categoriesContainerRef}
+              className="flex items-center gap-4 min-w-0 overflow-hidden"
             >
-              All
-            </button>
-
-            {visibleCategories.map((category) => (
+              {/* Botón "All" */}
               <button
-                key={category.id}
-                onClick={() => handleCategoryClick(category.id.toString())}
-                className={`px-3 py-1.5 rounded-full text-sm transition-all whitespace-nowrap flex-shrink-0 ${
-                  selectedCategory === category.id.toString()
-                    ? 'bg-black text-white'
-                    : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
-                }`}
+                ref={allButtonRef}
+                onClick={() => handleCategorySelect('')}
+                className={`
+                  px-4 h-10 rounded-lg text-sm font-medium transition-all whitespace-nowrap flex-shrink-0
+                  ${selectedCategory === '' 
+                    ? 'bg-black text-white' 
+                    : 'bg-gray-50 hover:bg-gray-100 text-gray-700'
+                  }
+                `}
               >
-                {category.name}
+                Todas las categorías
               </button>
-            ))}
 
-            {overflowCategories.length > 0 && (
+              {/* Categorías visibles */}
+              {visibleCategories.map((category) => (
+                <button
+                  key={category.id}
+                  onClick={() => handleCategorySelect(category.id.toString())}
+                  className={`
+                    px-4 h-10 rounded-lg text-sm font-medium transition-all whitespace-nowrap
+                    ${selectedCategory === category.id.toString()
+                      ? 'bg-black text-white'
+                      : 'bg-gray-50 hover:bg-gray-100 text-gray-700'
+                    }
+                  `}
+                >
+                  {category.name}
+                </button>
+              ))}
+            </div>
+
+            {/* Botón "More" y dropdown */}
+            {hiddenCategories.length > 0 && (
               <div className="relative flex-shrink-0">
                 <button
-                  onClick={() => setShowMoreMenu(!showMoreMenu)}
-                  className="px-3 py-1.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800 flex items-center gap-1 text-sm"
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className={`
+                    px-4 h-10 rounded-lg text-sm font-medium transition-all whitespace-nowrap
+                    flex items-center gap-2
+                    ${isDropdownOpen 
+                      ? 'bg-black text-white' 
+                      : 'bg-gray-50 hover:bg-gray-100 text-gray-700'
+                    }
+                  `}
                 >
-                  More
-                  <ChevronDown className={`w-4 h-4 transition-transform ${showMoreMenu ? 'rotate-180' : ''}`} />
+                  Más
+                  <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
 
-                <AnimatePresence>
-                  {showMoreMenu && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 10 }}
-                      className="absolute top-full right-0 mt-2 py-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-50"
-                    >
-                      {overflowCategories.map((category) => (
-                        <button
-                          key={category.id}
-                          onClick={() => handleCategoryClick(category.id.toString())}
-                          className={`w-full text-left px-4 py-2 text-sm ${
-                            selectedCategory === category.id.toString()
-                              ? 'bg-gray-100 text-black'
-                              : 'text-gray-700 hover:bg-gray-50'
-                          }`}
-                        >
-                          {category.name}
-                        </button>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                {isDropdownOpen && (
+                  <div
+                    ref={dropdownRef}
+                    className="absolute right-0 mt-2 py-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 z-[51]"
+                  >
+                    {hiddenCategories.map((category) => (
+                      <button
+                        key={category.id}
+                        onClick={() => handleCategorySelect(category.id.toString())}
+                        className={`
+                          w-full px-4 py-2 text-sm text-left transition-colors
+                          ${selectedCategory === category.id.toString()
+                            ? 'bg-gray-100 text-black font-medium'
+                            : 'text-gray-700 hover:bg-gray-50'
+                          }
+                        `}
+                      >
+                        {category.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>
         </div>
       </div>
-    </div>
+    </header>
   );
 } 

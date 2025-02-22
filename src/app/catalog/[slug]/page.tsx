@@ -69,17 +69,7 @@ export default function ProductPage({ params }: ProductPageProps) {
   return (
     <div className="min-h-screen">
       <Navbar alwaysShowBackground />
-      <div className="pt-[92px] px-[50px] pb-[50px]">
-        {/* Navegación */}
-        <div className="mb-8">
-          <button 
-            onClick={() => router.back()}
-            className="text-night-lemon hover:text-night-lemon/80 transition-colors"
-          >
-            ← Volver al catálogo
-          </button>
-        </div>
-
+      <div className="pt-[92px] px-4 sm:px-[50px] pb-[50px]">
         {/* Detalles del producto */}
         <ProductDetails product={product} />
 

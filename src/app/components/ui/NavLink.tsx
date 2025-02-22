@@ -4,21 +4,23 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-interface NavLinkProps {
+export interface NavLinkProps {
   href: string;
-  isExact?: boolean;
-  className?: string;
   children: React.ReactNode;
+  className?: string;
+  isExact?: boolean;
+  onClick?: () => void;
 }
 
-export const NavLink = ({ href, isExact, className = '', children }: NavLinkProps) => {
+export const NavLink = ({ href, children, className = '', isExact = false, onClick }: NavLinkProps) => {
   const pathname = usePathname();
-  const isActive = isExact ? pathname === href : pathname?.startsWith(href);
+  const isActive = isExact ? pathname === href : pathname.startsWith(href);
 
   return (
     <Link 
       href={href}
       className={`${className} ${isActive ? 'border-b-2 border-[#1D1C19]' : ''}`}
+      onClick={onClick}
     >
       {children}
     </Link>

@@ -7,10 +7,11 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const isAdminRoute = pathname?.startsWith('/admin')
   const isHome = pathname === '/'
+  const isCatalog = pathname?.startsWith('/catalog')
 
   return (
     <div className="min-h-screen flex flex-col relative">
-      {!isAdminRoute && !isHome && (
+      {!isAdminRoute && !isHome && !isCatalog && (
         <header className="w-full bg-white">
           <Navbar />
         </header>

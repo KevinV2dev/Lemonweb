@@ -67,10 +67,10 @@ export function RecommendedProducts({ currentProduct, categoryId }: RecommendedP
 
   return (
     <div className="mt-16">
-      <h2 className="text-2xl font-bold text-night-lemon mb-8">
+      <h2 className="text-xl sm:text-2xl font-bold text-night-lemon mb-6 sm:mb-8">
         Productos Recomendados
       </h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-4">
         {recommendedProducts.map((product) => (
           <ProductCard key={product.id} {...product} />
         ))}

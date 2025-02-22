@@ -1,6 +1,7 @@
 'use client';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { Badge } from '@/app/components/ui/Badge';
 import type { Product } from '@/types';
 
 export function ProductCard(product: Product) {
@@ -44,9 +45,9 @@ export function ProductCard(product: Product) {
                 {product.name}
               </h3>
               <span className="text-silver-lemon">•</span>
-              <span className="text-silver-lemon text-sm">
-                {product.category?.name}
-              </span>
+              {product.category?.name && (
+                <Badge>{product.category.name}</Badge>
+              )}
             </div>
 
             {/* Descripción */}

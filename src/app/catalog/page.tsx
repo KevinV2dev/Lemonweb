@@ -6,7 +6,6 @@ import type { Product, Category } from '@/types';
 import { ProductCard } from '@/app/components/catalog/ProductCard';
 import { ProductCardSkeleton } from '@/app/components/catalog/ProductCardSkeleton';
 import { CatalogFilters } from '@/app/components/catalog/CatalogFilters';
-import { Navbar } from '@/app/components/ui/navbar';
 
 export default function CatalogPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -57,43 +56,24 @@ export default function CatalogPage() {
     ));
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen">
-        <Navbar alwaysShowBackground />
-        <div className="fixed top-[72px] left-0 right-0 z-40 bg-white shadow-sm">
+  return (
+    <div className="min-h-screen flex flex-col">
+      <div className="flex-1">
+        <div className="sticky top-[88px] md:top-[88px] lg:top-[88px] [@media(min-width:1120px)]:top-[108px] left-0 right-0 z-40 bg-white shadow-sm">
           <CatalogFilters 
-            categories={[]}
-            onSearch={() => {}}
-            onCategoryChange={() => {}}
+            categories={categories}
+            onSearch={setSearchTerm}
+            onCategoryChange={setSelectedCategory}
           />
         </div>
-        <div className="pt-[172px] px-[50px] pb-[50px]">
+        <div className="mt-[108px] px-4 sm:px-[50px] py-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {renderSkeletons()}
+            {isFiltering ? renderSkeletons() : (
+              filteredProducts.map((product) => (
+                <ProductCard key={product.id} {...product} />
+              ))
+            )}
           </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen">
-      <Navbar alwaysShowBackground />
-      <div className="fixed top-[72px] left-0 right-0 z-40 bg-white shadow-sm">
-        <CatalogFilters 
-          categories={categories}
-          onSearch={setSearchTerm}
-          onCategoryChange={setSelectedCategory}
-        />
-      </div>
-      <div className="pt-[172px] px-[50px] pb-[50px]">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {isFiltering ? renderSkeletons() : (
-            filteredProducts.map((product) => (
-              <ProductCard key={product.id} {...product} />
-            ))
-          )}
         </div>
       </div>
     </div>

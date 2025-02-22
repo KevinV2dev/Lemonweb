@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { carouselData } from '@/app/carousel'; //Para mas Imagenes importar el Carousel.ts
 import BarraDerecha from '@/app/components/ui/barraderecha';
 import { Navbar } from '@/app/components/ui/navbar';
-import BarraMovil from '@/app/components/ui/barramobile';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Preloader } from '@/app/components/ui/preloader';
 import { ParallaxProvider, Parallax } from 'react-scroll-parallax';
@@ -128,63 +127,62 @@ export default function Home() {
         {isLoading && <Preloader />}
       </AnimatePresence>
       <main className="flex flex-col mb-24">
-        <section 
-          className={`
-            relative w-full min-h-screen
-            grid grid-cols-1 lg:grid-cols-[1fr_auto] 
-            overflow-hidden
-          `}
-        >
-          {/* Imagen de fondo - ajustamos para cubrir todo el ancho */}
-          <div className="absolute inset-0 w-full -z-10">
-            {/* Imagen móvil (default y < 640px) */}
-            <Image
-              src="/backgrounds/herobg.png"
-              alt="Hero background"
-              fill
-              priority
-              className="
-                object-cover object-[40%_center]
-                block sm:hidden
-                w-full
-              "
-              sizes="100vw"
-              quality={100}
-              unoptimized={true}
-            />
+      <section 
+          className="
+          relative w-full min-h-screen
+          overflow-hidden
+          "
+      >
+        {/* Imagen de fondo - ajustamos para cubrir todo el ancho */}
+        <div className="absolute inset-0 w-full -z-10">
+          {/* Imagen móvil (default y < 640px) */}
+          <Image
+            src="/backgrounds/herobg.png"
+            alt="Hero background"
+            fill
+            priority
+            className="
+                object-cover object-[32%_center]
+              block sm:hidden
+              w-full
+            "
+            sizes="100vw"
+            quality={100}
+            unoptimized={true}
+          />
 
-            {/* Imagen tablet (640px - 1024px) */}
-            <Image
-              src="/backgrounds/herobg.png"
-              alt="Hero background"
-              fill
-              priority
-              className="
-                object-cover object-[23%_center]
-                hidden sm:block lg:hidden
-              "
-              sizes="(min-width: 640px) and (max-width: 1024px) 100vw"
-              quality={100}
-              unoptimized={true}
-            />
+          {/* Imagen tablet (640px - 1024px) */}
+          <Image
+            src="/backgrounds/herobg.png"
+            alt="Hero background"
+            fill
+            priority
+            className="
+              object-cover object-[23%_center]
+              hidden sm:block lg:hidden
+            "
+            sizes="(min-width: 640px) and (max-width: 1024px) 100vw"
+            quality={100}
+            unoptimized={true}
+          />
 
-            {/* Imagen desktop (≥ 1024px) */}
-            <Image
-              src="/backgrounds/herobg.png"
-              alt="Hero background"
-              fill
-              priority
-              className="
-                object-cover object-[0%_center]
-                hidden lg:block
-              "
-              sizes="(min-width: 1024px) 100vw"
-              quality={100}
-              unoptimized={true}
-            />
-          </div>
+          {/* Imagen desktop (≥ 1024px) */}
+          <Image
+            src="/backgrounds/herobg.png"
+            alt="Hero background"
+            fill
+            priority
+            className="
+              object-cover object-[0%_center]
+              hidden lg:block
+            "
+            sizes="(min-width: 1024px) 100vw"
+            quality={100}
+            unoptimized={true}
+          />
+        </div>
 
-          {/* Navbar integrada en el hero */}
+        {/* Navbar integrada en el hero */}
           <motion.div 
             className="absolute top-0 left-0 w-full z-20"
             initial={{ y: -100 }}
@@ -194,65 +192,28 @@ export default function Home() {
               ease: [0.43, 0.13, 0.23, 0.96]
             }}
           >
-            <Navbar />
+          <Navbar />
           </motion.div>
 
-          {/* Contenido principal */}
-          <div className="
-            flex flex-col justify-center
+        {/* Contenido principal */}
+        <div className="
+          flex flex-col justify-center
+          mt-24 sm:mt-0
             px-4 sm:px-[50px]
-            pt-[120px] sm:pt-[140px]
-            pb-[120px] sm:pb-[200px] lg:pb-[300px] 2xl:pb-[0px]
-            relative z-10
-            w-full
-            h-full
-          ">
-            <div className="flex gap-4 flex-col max-w-[1440px]">
-              {/* Texto - Ahora primero en el orden */}
-              <motion.div 
-                className="flex flex-col"
-                initial={{ x: -30, opacity: 0 }}
-                animate={contentVisible ? { x: 0, opacity: 1 } : { x: -30, opacity: 0 }}
-                transition={{ 
-                  duration: 1,
-                  ease: [0.43, 0.13, 0.23, 0.96],
-                  delay: staggerDelay 
-                }}
-              >
-                <h1 className="
-                  text-night-lemon
-                  text-normal sm:text-5xl lg:text-[32px]
-                  font-bold 
-                  leading-tight
-                  tracking-tight
-                  max-w-2xl
-                ">
-                  Fresh spaces, clear minds.
-                </h1>
-
-                <motion.div 
-                  className="flex flex-col mt-4 text-normal sm:normal text-night-lemon max-w-[550px]"
-                  initial={{ x: -30, opacity: 0 }}
-                  animate={contentVisible ? { x: 0, opacity: 1 } : { x: -30, opacity: 0 }}
-                  transition={{ 
-                    duration: 1,
-                    ease: [0.43, 0.13, 0.23, 0.96],
-                    delay: staggerDelay * 2 
-                  }}
-                >
-                  <span>
-                    Get a personalized solution to your spaces 
-                    create unique pieces for you and your home. Deal with professionals who care.
-                  </span>
-                </motion.div>
-              </motion.div>
-
-              {/* Carrusel mejorado */}
+          pt-[120px] sm:pt-[140px]
+          pb-[120px] sm:pb-[200px] lg:pb-[300px] 2xl:pb-[0px]
+          relative z-10
+          w-full
+          h-full
+        ">
+            <div className="flex flex-col gap-4 max-w-[1440px] mt-24">
+              {/* Carrusel - Primero en móvil */}
               <motion.div 
                 className="
                   relative overflow-hidden z-0
-                  w-full max-w-[600px]
+                  w-full max-w-[400px] sm:max-w-[600px]
                   aspect-[3/2]
+                  order-1 sm:order-2
                 "
                 initial={{ x: -30, opacity: 0 }}
                 animate={contentVisible ? { x: 0, opacity: 1 } : { x: -30, opacity: 0 }}
@@ -306,10 +267,49 @@ export default function Home() {
                 </div>
               </motion.div>
 
-              {/* Botón CTA */}
+              {/* Texto - Segundo en móvil */}
+              <motion.div 
+                className="flex flex-col order-2 sm:order-1"
+                initial={{ x: -30, opacity: 0 }}
+                animate={contentVisible ? { x: 0, opacity: 1 } : { x: -30, opacity: 0 }}
+                transition={{ 
+                  duration: 1,
+                  ease: [0.43, 0.13, 0.23, 0.96],
+                  delay: staggerDelay 
+                }}
+              >
+              <h1 className="
+                  text-night-lemon
+                  text-[32px] sm:text-5xl lg:text-[32px]
+                font-bold 
+                leading-tight
+                tracking-tight
+                max-w-2xl
+              ">
+                Fresh spaces, clear minds.
+              </h1>
+
+                <motion.div 
+                  className="flex flex-col mt-4 text-[16px] sm:text-normal text-night-lemon max-w-[400px] sm:max-w-[550px]"
+                  initial={{ x: -30, opacity: 0 }}
+                  animate={contentVisible ? { x: 0, opacity: 1 } : { x: -30, opacity: 0 }}
+                  transition={{ 
+                    duration: 1,
+                    ease: [0.43, 0.13, 0.23, 0.96],
+                    delay: staggerDelay * 2 
+                  }}
+                >
+                  <span className="text-night-lemon">
+                    Get a personalized solution to your spaces, 
+                    create unique pieces for you and your home. Deal with professionals who care.
+                  </span>
+                </motion.div>
+              </motion.div>
+
+              {/* Botón CTA - Último en móvil y desktop */}
               <motion.button 
                 onClick={() => router.push('/appointment')}  
-                className="bg-night-lemon text-white px-6 py-[10px] flex items-center gap-2 group w-fit"
+                className="bg-night-lemon text-white px-6 py-[10px] flex items-center gap-2 group w-fit order-3"
                 initial={{ x: -30, opacity: 0 }}
                 animate={contentVisible ? { x: 0, opacity: 1 } : { x: -30, opacity: 0 }}
                 transition={{ 
@@ -328,36 +328,25 @@ export default function Home() {
                   />
                 </span>
               </motion.button>
+              </div>
             </div>
-          </div>
 
-          {/* Barras laterales - ajustamos posición */}
+          {/* Contenedor de elementos sociales y barra lateral */}
           <motion.div 
-            className="
-              relative shrink flex items-center justify-center
-              lg:static fixed 
-              bottom-[50px] sm:bottom-[200px]
-              left-0 right-0 
-              w-full max-w-full
-              px-4 sm:px-[50px]
+              className="
+              absolute top-1/2 -translate-y-1/2 right-6
+              hidden sm:flex flex-col items-end gap-8
+              z-20
             "
             initial={{ y: 50, opacity: 0 }}
-            animate={contentVisible ? { y: 0, opacity: 1 } : { y: 50, opacity: 0 }}
+            animate={contentVisible ? { y: '-50%', opacity: 1 } : { y: 50, opacity: 0 }}
             transition={{ 
               duration: 1,
               ease: [0.43, 0.13, 0.23, 0.96],
               delay: staggerDelay * 5 
             }}
           >
-            {/* Barra móvil - visible en móvil y tablet */}
-            <div className="block lg:hidden w-full">
-              <BarraMovil />
-            </div>
-
-            {/* Barra escritorio - visible solo en desktop */}
-            <div className="hidden lg:block">
-              <BarraDerecha />
-            </div>
+            <BarraDerecha  />
           </motion.div>
         </section>
 
@@ -462,9 +451,10 @@ export default function Home() {
                   We create spaces for you, and only you.
                 </h3>
                 <p className="text-heaven-lemon max-w-[600px]">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor 
-                  incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis 
-                  nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                  Experience the perfect blend of functionality and aesthetics with our custom storage solutions. 
+                  Our expert team specializes in creating personalized spaces that not only maximize your storage 
+                  capacity but also enhance the overall beauty of your home. From walk-in closets to custom 
+                  cabinets, we transform your vision into reality.
                 </p>
               </div>
             </div>
@@ -472,9 +462,9 @@ export default function Home() {
         </section>
 
         {/* Bloque 3: Features */}
-        <section className="w-full bg-white">
-          <div className="max-w-[1920px] mx-auto h-[244px] px-32 py-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-14 w-full h-full">
+        <section className="w-full bg-white py-16 sm:py-24">
+          <div className="max-w-[1920px] mx-auto px-4 sm:px-8 lg:px-32">
+            <div className="grid grid-cols-1 gap-12 w-full">
               {/* Feature 1 */}
               <div className="flex flex-col items-start p-4">
                 <div className="mb-4">
@@ -487,7 +477,7 @@ export default function Home() {
                 </div>
                 <div>
                   <h4 className="text-xl font-semibold text-night-lemon">Custom design</h4>
-                  <p className="text-silver-lemon mt-2">Cada espacio es único, fabricamos específicamente para ti</p>
+                  <p className="text-silver-lemon mt-2">Each space is unique, we manufacture specifically for you</p>
                 </div>
               </div>
 
@@ -503,7 +493,7 @@ export default function Home() {
                 </div>
                 <div>
                   <h4 className="text-xl font-semibold text-night-lemon">High quality materials</h4>
-                  <p className="text-silver-lemon mt-2">Durabilidad y estética en los más finos acabados</p>
+                  <p className="text-silver-lemon mt-2">Durability and aesthetics in the finest finishes</p>
                 </div>
               </div>
 
@@ -519,7 +509,7 @@ export default function Home() {
                 </div>
                 <div>
                   <h4 className="text-xl font-semibold text-night-lemon">Sustainability</h4>
-                  <p className="text-silver-lemon mt-2">Productos sustentables y responsables con el ambiente</p>
+                  <p className="text-silver-lemon mt-2">Sustainable and environmentally responsible products</p>
                 </div>
               </div>
 
@@ -535,7 +525,7 @@ export default function Home() {
                 </div>
                 <div>
                   <h4 className="text-xl font-semibold text-night-lemon">Fast delivery</h4>
-                  <p className="text-silver-lemon mt-2">Instalación eficiente y en los tiempos acordados</p>
+                  <p className="text-silver-lemon mt-2">Efficient installation within agreed timeframes</p>
                 </div>
               </div>
             </div>
@@ -550,7 +540,7 @@ export default function Home() {
             easing="easeInQuad"
             speed={-10}
           >
-            <Image
+                <Image
               src="/images/closet2.jpg"
               alt="Lemon lifestyle"
               fill
@@ -569,9 +559,9 @@ export default function Home() {
               Our story
             </h2>
             <p className="text-silver-lemon text-lg">
-              Lemon nació como respuesta a la necesidad actual de optimizar el espacio sin sacrificar el estilo. 
-              En un época donde cada vez más personas trabajan desde casa, entendemos la importancia de crear 
-              espacios funcionales, elegantes y perfectamente adaptados a las necesidades de nuestros clientes.
+              Lemon was born as a response to the current need to optimize space without sacrificing style. 
+              In an era where more and more people work from home, we understand the importance of creating 
+              functional, elegant spaces perfectly adapted to our clients' needs.
             </p>
           </div>
         </section>
@@ -604,28 +594,28 @@ export default function Home() {
                 </h3>
                 <div className="space-y-6">
                   <div>
-                    <h4 className="font-semibold text-night-lemon">Consulta personalizada</h4>
-                    <p className="text-silver-lemon">Analizamos tu espacio y necesidades</p>
+                    <h4 className="font-semibold text-night-lemon">Personalized Consultation</h4>
+                    <p className="text-silver-lemon">We analyze your space and needs</p>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-night-lemon">Diseño a medida</h4>
-                    <p className="text-silver-lemon">Creamos una solución adaptada a tu hogar</p>
+                    <h4 className="font-semibold text-night-lemon">Custom Design</h4>
+                    <p className="text-silver-lemon">We create a solution tailored to your home</p>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-night-lemon">Fabricación de calidad</h4>
-                    <p className="text-silver-lemon">Proceso de producción con materiales de primera categoría</p>
+                    <h4 className="font-semibold text-night-lemon">Quality Manufacturing</h4>
+                    <p className="text-silver-lemon">Production process with premium materials</p>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-night-lemon">Instalación</h4>
-                    <p className="text-silver-lemon">Instalamos y organizamos tu espacio de forma eficiente</p>
+                    <h4 className="font-semibold text-night-lemon">Installation</h4>
+                    <p className="text-silver-lemon">We install and organize your space efficiently</p>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-night-lemon">Disfruta tu nuevo espacio</h4>
-                    <p className="text-silver-lemon">Vive el armario con un diseño optimizado para tu estilo de vida</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+                    <h4 className="font-semibold text-night-lemon">Enjoy Your New Space</h4>
+                    <p className="text-silver-lemon">Experience your closet with a design optimized for your lifestyle</p>
+          </div>
+        </div>
+          </div>
+        </div>
           </div>
         </section>
 
@@ -633,19 +623,21 @@ export default function Home() {
         <section className="w-full py-16 bg-white">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <p className="text-night-lemon text-xl mb-4">
-              ¿Quieres renovar tu hogar? Explora nuestro{" "}
+              Want to renovate your home?{" "}
+              <br className="sm:hidden" />
+              Explore our{" "}
               <button 
                 onClick={() => router.push('/catalog')}
                 className="text-night-lemon font-semibold underline hover:text-night-lemon/80"
               >
-                catálogo
+                catalog
               </button>{" "}
-              o{" "}
+              or{" "}
               <button
                 onClick={() => router.push('/appointment')}
                 className="text-night-lemon font-semibold underline hover:text-night-lemon/80"
               >
-                agenda una cita
+                schedule an appointment
               </button>
             </p>
           </div>
@@ -655,9 +647,9 @@ export default function Home() {
         <section className="w-full bg-white">
           <div className="px-4">
             <Gallery images={galleryData.images} />
-          </div>
-        </section>
-      </main>
+        </div>
+      </section>
+    </main>
     </ParallaxProvider>
   );
 }
