@@ -11,6 +11,7 @@ import { ParallaxProvider, Parallax } from 'react-scroll-parallax';
 import Lenis from '@studio-freight/lenis';
 import { Gallery } from '@/app/components/ui/Gallery';
 import { galleryData } from '@/app/gallery-data';
+import { RecommendedProducts } from "./components/catalog/RecommendedProducts";
 // Importaremos la barra móvil cuando la crees
 // import BarraMobile from '@/app/components/ui/barramobile';
 

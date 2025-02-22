@@ -113,7 +113,7 @@ export function Sidebar({ currentSection, onSectionChange }: SidebarProps) {
         <div className="p-6">
           <div className="flex items-center justify-center mb-8">
             <Image
-              src="/icons/group.svg"
+              src="/icons/lemon.svg"
               alt="Lemon"
               width={114}
               height={24}
