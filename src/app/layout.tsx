@@ -15,14 +15,14 @@ const saira = Saira({
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: "Lemon - Diseño y Fabricación de Muebles",
-  description: "Diseñamos y fabricamos muebles de alta calidad. Especialistas en mobiliario personalizado, diseño de interiores y soluciones a medida.",
-  keywords: 'muebles, diseño de interiores, fabricación de muebles, muebles personalizados, diseño de muebles',
+  title: "Lemon - Furniture Design and Manufacturing",
+  description: "We design and manufacture high-quality furniture. Specialists in custom furniture, interior design, and tailored solutions.",
+  keywords: 'furniture, interior design, furniture manufacturing, custom furniture, furniture design',
   authors: [{ name: 'Lemon' }],
   metadataBase: new URL('https://lemon.com'),
   openGraph: {
-    title: 'Lemon - Diseño y Fabricación de Muebles',
-    description: 'Diseñamos y fabricamos muebles de alta calidad. Especialistas en mobiliario personalizado, diseño de interiores y soluciones a medida.',
+    title: 'Lemon - Furniture Design and Manufacturing',
+    description: 'We design and manufacture high-quality furniture. Specialists in custom furniture, interior design, and tailored solutions.',
     url: 'https://lemon.com',
     siteName: 'Lemon',
     images: [
@@ -30,26 +30,27 @@ export const metadata: Metadata = {
         url: '/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'Lemon - Diseño y Fabricación de Muebles',
+        alt: 'Lemon - Furniture Design and Manufacturing',
       }
     ],
-    locale: 'es_ES',
+    locale: 'en_US',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Lemon - Diseño y Fabricación de Muebles',
-    description: 'Diseñamos y fabricamos muebles de alta calidad. Especialistas en mobiliario personalizado.',
+    title: 'Lemon - Furniture Design and Manufacturing',
+    description: 'We design and manufacture high-quality furniture. Specialists in custom furniture.',
     images: ['/twitter-image.jpg'],
     creator: '@lemon',
   },
   icons: {
     icon: [
-      { url: '/icon.svg' },
       { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico' },
       { url: '/android-chrome-192x192.png', sizes: '192x192', type: 'image/png' },
       { url: '/android-chrome-512x512.png', sizes: '512x512', type: 'image/png' },
     ],
+    shortcut: '/favicon.ico',
     apple: [
       { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
     ],
