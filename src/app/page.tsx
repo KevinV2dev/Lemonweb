@@ -440,7 +440,7 @@ export default function Home() {
             <div className="grid grid-cols-1 lg:grid-cols-[40%_60%] gap-4 items-center">
               <div className="relative aspect-[4/3] w-full overflow-hidden">
                 <Image
-                  src="/images/closets_de_melamina.jpg"
+                  src="/images/assets/closet-2.jpg"
                   alt="Interior design"
                   fill
                   className="object-cover"
@@ -541,7 +541,7 @@ export default function Home() {
             speed={-10}
           >
                 <Image
-              src="/images/closet2.jpg"
+              src="/images/assets/story.jpg"
               alt="Lemon lifestyle"
               fill
               className="object-cover"
@@ -573,12 +573,12 @@ export default function Home() {
               <div className="relative aspect-[4/3] w-full overflow-hidden">
                 <Parallax
                   className="w-full h-full"
-                  translateY={[-30, 60]}
+                  translateY={[-20, 60]}
                   easing="easeInQuad"
                   speed={-50}
                 >
                   <Image
-                    src="/images/Closet1.webp"
+                    src="/images/assets/process-1.jpg"
                     alt="Our process"
                     fill
                     className="object-cover"

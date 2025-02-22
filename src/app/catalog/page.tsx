@@ -57,23 +57,21 @@ export default function CatalogPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <div className="flex-1">
-        <div className="sticky top-[88px] md:top-[88px] lg:top-[88px] [@media(min-width:1120px)]:top-[108px] left-0 right-0 z-40 bg-white shadow-sm">
-          <CatalogFilters 
-            categories={categories}
-            onSearch={setSearchTerm}
-            onCategoryChange={setSelectedCategory}
-          />
-        </div>
-        <div className="mt-[108px] px-4 py-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {isFiltering ? renderSkeletons() : (
-              filteredProducts.map((product) => (
-                <ProductCard key={product.id} {...product} />
-              ))
-            )}
-          </div>
+    <div className="min-h-screen">
+      <div className="sticky top-[88px] md:top-[88px] lg:top-[88px] [@media(min-width:1120px)]:top-[108px] left-0 right-0 z-40 bg-white shadow-sm">
+        <CatalogFilters 
+          categories={categories}
+          onSearch={setSearchTerm}
+          onCategoryChange={setSelectedCategory}
+        />
+      </div>
+      <div className="mt-[108px] px-4 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {isFiltering ? renderSkeletons() : (
+            filteredProducts.map((product) => (
+              <ProductCard key={product.id} {...product} />
+            ))
+          )}
         </div>
       </div>
     </div>

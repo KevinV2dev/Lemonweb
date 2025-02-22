@@ -39,7 +39,6 @@ export default function ProductPage({ params }: ProductPageProps) {
   if (isLoading) {
     return (
       <div className="min-h-screen">
-        <Navbar alwaysShowBackground />
         <div className="pt-[92px] px-[50px] pb-[50px] flex items-center justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
         </div>
@@ -50,7 +49,6 @@ export default function ProductPage({ params }: ProductPageProps) {
   if (!product) {
     return (
       <div className="min-h-screen">
-        <Navbar alwaysShowBackground />
         <div className="pt-[92px] px-[50px] pb-[50px]">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-night-lemon">Producto no encontrado</h1>
@@ -68,7 +66,6 @@ export default function ProductPage({ params }: ProductPageProps) {
 
   return (
     <div className="min-h-screen">
-      <Navbar alwaysShowBackground />
       <div className="pt-[124px] px-4 sm:px-[50px] pb-[50px]">
         {/* Detalles del producto */}
         <ProductDetails product={product} />
