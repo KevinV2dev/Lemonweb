@@ -357,6 +357,7 @@ function AdminPageContent() {
                       <SortableHeader column="appointment_date" label="Date" />
                       <SortableHeader column="preferred_contact_time" label="Time" />
                       <SortableHeader column="status" label="Status" />
+                      <SortableHeader column="created_at" label="Created" />
                       <th className="px-3 py-3.5 text-left text-sm font-medium text-silver-lemon">Actions</th>
                     </tr>
                   </thead>
@@ -380,6 +381,9 @@ function AdminPageContent() {
                           <span className={`inline-flex items-center px-2.5 py-0.5 ${getStatusColor(appointment.status)}`}>
                             {getStatusText(appointment.status)}
                           </span>
+                        </td>
+                        <td className="px-3 py-4 text-sm text-night-lemon">
+                          {format(new Date(appointment.created_at), "d MMM yyyy, HH:mm", { locale: es })}
                         </td>
                         <td className="px-3 py-4 text-sm text-night-lemon">
                           <button

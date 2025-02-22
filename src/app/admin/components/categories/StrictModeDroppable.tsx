@@ -3,7 +3,14 @@
 import { useEffect, useState } from 'react';
 import { Droppable, DroppableProps } from 'react-beautiful-dnd';
 
-export function StrictModeDroppable({ children, ...props }: DroppableProps) {
+// Definimos los valores por defecto usando parámetros de JavaScript
+export function StrictModeDroppable({
+  children,
+  direction = 'vertical',
+  type = 'DEFAULT',
+  mode = 'standard',
+  ...props
+}: DroppableProps) {
   const [enabled, setEnabled] = useState(false);
 
   useEffect(() => {
@@ -18,5 +25,14 @@ export function StrictModeDroppable({ children, ...props }: DroppableProps) {
     return null;
   }
 
-  return <Droppable {...props}>{children}</Droppable>;
+  return (
+    <Droppable
+      direction={direction}
+      type={type}
+      mode={mode}
+      {...props}
+    >
+      {children}
+    </Droppable>
+  );
 } 

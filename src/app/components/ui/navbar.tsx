@@ -108,6 +108,7 @@ export const Navbar = ({ alwaysShowBackground = false }: NavbarProps) => {
             </button>
 
             <button 
+            onClick={() => router.push('/appointment')}
               className='bg-night-lemon text-white px-6 py-[10px] flex items-center gap-2 group'
             >
               BOOK A CALL

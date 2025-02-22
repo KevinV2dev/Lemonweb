@@ -24,11 +24,8 @@ export interface Category {
   id: number;
   name: string;
   slug: string;
-  parent_id: number | null;
-  type: 'category' | 'subcategory' | 'material';
   created_at?: string;
   display_order: number;
-  parent?: Category;
 }
 
 export interface Product {

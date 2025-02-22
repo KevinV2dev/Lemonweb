@@ -1,10 +1,7 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import type { Product, Category, ProductImage, ProductColor, ProductMaterial, ProductAttribute } from '@/types';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-export const supabase = createClient(supabaseUrl, supabaseKey);
+export const supabase = createClientComponentClient();
 
 export async function getProduct(slug: string): Promise<Product> {
   const { data: product, error } = await supabase
@@ -168,63 +165,75 @@ export const productService = {
   },
 
   async createCategory(categoryData: { name: string; slug: string; }) {
+    // Obtener el último display_order
+    const { data: categories } = await supabase
+      .from('categories')
+      .select('display_order')
+      .order('display_order', { ascending: false })
+      .limit(1);
+
+    const nextDisplayOrder = categories && categories.length > 0 
+      ? (categories[0].display_order + 1) 
+      : 0;
+
     const { data, error } = await supabase
       .from('categories')
-      .insert([{ ...categoryData, type: 'category' }])
+      .insert([{ 
+        name: categoryData.name,
+        slug: categoryData.slug,
+        display_order: nextDisplayOrder
+      }])
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error creating category:', error);
+      throw error;
+    }
     return data;
   },
 
   async uploadProductImage(file: File) {
     try {
-      // Verificar la sesión
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        throw new Error('Debes estar autenticado para subir imágenes');
-      }
+      console.log('Iniciando subida de imagen:', { fileName: file.name, fileSize: file.size, fileType: file.type });
 
       const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random()}.${fileExt}`;
-      const filePath = `${fileName}`;
+      const fileName = `${Date.now()}.${fileExt}`;
+      console.log('Nombre de archivo generado:', fileName);
 
-      // Intentar subir el archivo
+      console.log('Intentando subir archivo a Supabase...');
       const { data, error: uploadError } = await supabase.storage
         .from('products')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
+        .upload(fileName, file);
 
       if (uploadError) {
-        console.error('Upload error:', uploadError);
+        console.error('Error detallado de subida:', uploadError);
         throw uploadError;
       }
 
-      // Obtener la URL pública
+      console.log('Archivo subido exitosamente:', data);
       const { data: { publicUrl } } = supabase.storage
         .from('products')
-        .getPublicUrl(filePath);
+        .getPublicUrl(fileName);
 
+      console.log('URL pública generada:', publicUrl);
       return publicUrl;
     } catch (error) {
-      console.error('Error uploading image:', error);
+      console.error('Error completo:', error);
       if (error instanceof Error) {
-        throw new Error(`Error al subir la imagen: ${error.message}`);
+        console.error('Mensaje de error:', error.message);
       }
-      throw new Error('Error al subir la imagen');
+      throw error;
     }
   },
 
   async deleteProductImage(imageUrl: string) {
-    const filePath = imageUrl.split('/').pop();
-    if (!filePath) return;
+    const fileName = imageUrl.split('/').pop();
+    if (!fileName) return;
 
     const { error } = await supabase.storage
       .from('products')
-      .remove([`product-images/${filePath}`]);
+      .remove([fileName]);
 
     if (error) throw error;
   },

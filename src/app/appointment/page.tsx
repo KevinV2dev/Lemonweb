@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { Navbar } from '@/app/components/ui/navbar';
 import { Calendar, MapPin, Send, ChevronRight } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import { createAppointment } from '@/services/appointments';
 
 export default function AppointmentPage() {
   const [step, setStep] = useState(1);
@@ -31,9 +33,73 @@ export default function AppointmentPage() {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(formData);
+    
+    try {
+      // Validaciones básicas
+      if (!formData.name || !formData.email || !formData.phone || !formData.date || !formData.timePreference || !formData.location) {
+        toast.error('Por favor, completa todos los campos requeridos');
+        return;
+      }
+
+      // Validar email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        toast.error('Por favor, ingresa un email válido');
+        return;
+      }
+
+      // Validar teléfono (solo números y longitud mínima)
+      if (!/^\d{10,}$/.test(formData.phone)) {
+        toast.error('Por favor, ingresa un número de teléfono válido (mínimo 10 dígitos)');
+        return;
+      }
+
+      // Validar fecha
+      const selectedDate = new Date(formData.date);
+      if (selectedDate < new Date()) {
+        toast.error('La fecha debe ser futura');
+        return;
+      }
+
+      toast.loading('Enviando solicitud...');
+
+      // Preparar los datos para el servicio de citas
+      const appointmentData = {
+        client_name: formData.name,
+        client_email: formData.email,
+        phone: formData.phone,
+        appointment_date: selectedDate,
+        preferred_contact_time: formData.timePreference as 'morning' | 'afternoon' | 'evening',
+        address: formData.location,
+        notes: formData.message || ''
+      };
+
+      console.log('Enviando datos:', appointmentData);
+
+      await createAppointment(appointmentData);
+      
+      toast.dismiss();
+      toast.success('¡Cita agendada con éxito!');
+      
+      // Resetear el formulario
+      setStep(1);
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        date: '',
+        timePreference: '',
+        location: '',
+        message: ''
+      });
+
+    } catch (error) {
+      console.error('Error detallado:', error);
+      toast.dismiss();
+      toast.error('Error al agendar la cita. Por favor, intenta de nuevo.');
+    }
   };
 
   return (

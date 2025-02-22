@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { X, Upload, Trash, Plus } from 'lucide-react';
+import { X, Upload, Trash, Plus, Replace } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { productService } from '@/supabase/products';
 import type { Product, Category } from '@/types';
@@ -27,6 +27,8 @@ export function ProductModal({ isOpen, onClose, product, onSave }: ProductModalP
   const [formData, setFormData] = useState(initialFormState);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
 
   useEffect(() => {
     loadCategories();
@@ -38,8 +40,11 @@ export function ProductModal({ isOpen, onClose, product, onSave }: ProductModalP
         main_image: product.main_image,
         active: product.active
       });
+      setImagePreview(product.main_image);
     } else {
       setFormData(initialFormState);
+      setSelectedImage(null);
+      setImagePreview('');
     }
   }, [product, isOpen]);
 
@@ -53,82 +58,10 @@ export function ProductModal({ isOpen, onClose, product, onSave }: ProductModalP
     }
   };
 
-  const handleImageUpload = async (file: File) => {
-    try {
-      // Validar el tipo de archivo
-      if (!file.type.startsWith('image/')) {
-        toast.error('Por favor, selecciona un archivo de imagen válido');
-        return;
-      }
-
-      // Validar el tamaño (máximo 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error('La imagen no debe superar los 5MB');
-        return;
-      }
-
-      // Validar las dimensiones
-      const img = document.createElement('img');
-      const imgUrl = URL.createObjectURL(file);
-      
-      await new Promise<void>((resolve, reject) => {
-        img.onload = () => resolve();
-        img.onerror = () => reject(new Error('Error al cargar la imagen'));
-        img.src = imgUrl;
-      });
-
-      // Verificar dimensiones mínimas
-      if (img.width < 800 || img.height < 600) {
-        URL.revokeObjectURL(imgUrl);
-        toast.error('La imagen debe tener al menos 800x600 píxeles');
-        return;
-      }
-
-      // Comprimir la imagen si es necesario
-      let imageToUpload = file;
-      if (file.size > 1 * 1024 * 1024) { // Si es mayor a 1MB
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        
-        // Mantener la relación de aspecto
-        const maxWidth = 1920;
-        const maxHeight = 1440;
-        let width = img.width;
-        let height = img.height;
-
-        if (width > maxWidth) {
-          height = (maxWidth * height) / width;
-          width = maxWidth;
-        }
-        if (height > maxHeight) {
-          width = (maxHeight * width) / height;
-          height = maxHeight;
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        ctx?.drawImage(img, 0, 0, width, height);
-
-        // Convertir a Blob con calidad 0.8
-        const blob = await new Promise<Blob>((resolve) => {
-          canvas.toBlob((b) => resolve(b!), 'image/jpeg', 0.8);
-        });
-
-        imageToUpload = new File([blob], file.name, {
-          type: 'image/jpeg',
-          lastModified: Date.now(),
-        });
-      }
-
-      URL.revokeObjectURL(imgUrl);
-
-      const url = await productService.uploadProductImage(imageToUpload);
-      setFormData(prev => ({ ...prev, main_image: url }));
-      toast.success('Imagen subida correctamente');
-    } catch (error) {
-      console.error('Error al procesar la imagen:', error);
-      toast.error('Error al procesar la imagen');
-    }
+  const handleImageSelect = (file: File) => {
+    setSelectedImage(file);
+    const previewUrl = URL.createObjectURL(file);
+    setImagePreview(previewUrl);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -136,8 +69,16 @@ export function ProductModal({ isOpen, onClose, product, onSave }: ProductModalP
     setIsLoading(true);
 
     try {
+      let imageUrl = formData.main_image;
+
+      // Si hay una nueva imagen seleccionada, súbela primero
+      if (selectedImage) {
+        imageUrl = await productService.uploadProductImage(selectedImage);
+      }
+
       const productData = {
         ...formData,
+        main_image: imageUrl,
         category_id: parseInt(formData.category_id),
         slug: formData.name
           .toLowerCase()
@@ -277,21 +218,39 @@ export function ProductModal({ isOpen, onClose, product, onSave }: ProductModalP
                 Imagen Principal
               </label>
               <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-                {formData.main_image ? (
+                {imagePreview ? (
                   <div className="relative w-full aspect-square">
                     <Image
-                      src={formData.main_image}
+                      src={imagePreview}
                       alt="Preview"
                       fill
                       className="object-cover rounded-md"
                     />
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, main_image: '' })}
-                      className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
-                    >
-                      <Trash className="w-4 h-4" />
-                    </button>
+                    <div className="absolute top-2 right-2 flex gap-2">
+                      <label className="cursor-pointer p-1 bg-blue-500 text-white rounded-full hover:bg-blue-600">
+                        <Replace className="w-4 h-4" />
+                        <input
+                          type="file"
+                          className="sr-only"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleImageSelect(file);
+                          }}
+                        />
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedImage(null);
+                          setImagePreview('');
+                          setFormData({ ...formData, main_image: '' });
+                        }}
+                        className="p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                      >
+                        <Trash className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <div className="space-y-1 text-center">
@@ -305,7 +264,7 @@ export function ProductModal({ isOpen, onClose, product, onSave }: ProductModalP
                           accept="image/*"
                           onChange={(e) => {
                             const file = e.target.files?.[0];
-                            if (file) handleImageUpload(file);
+                            if (file) handleImageSelect(file);
                           }}
                         />
                       </label>
