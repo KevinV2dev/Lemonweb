@@ -28,7 +28,7 @@ export default function barraDerecha() {
             transition-all duration-700 ease-out
             ${isExpanded 
               ? 'w-[383px] h-full' 
-              : 'w-8 h-full'
+              : 'w-8 h-full '
             }
           `}
         >
@@ -39,7 +39,6 @@ export default function barraDerecha() {
             flex flex-col
             items-stretch
             py-6
-            z-10
             ${isExpanded ? 'left-0' : 'right-0'}
           `}>
             {/* Logo */}
@@ -64,7 +63,7 @@ export default function barraDerecha() {
 
           {/* Contenido expandible */}
           <div 
-            className={`
+            className={` 
               absolute
               top-0 left-8
               w-[320px]
@@ -80,8 +79,8 @@ export default function barraDerecha() {
               }
             `}
           >
-            <div className="space-y-4">
-              <h3 className="text-xl font-semibold">Welcome to Lemon</h3>
+            <div className="space-y-4 ">
+              <h3 className="text-xl font-semibold ">Welcome to Lemon</h3>
               <p className="text-sm text-gray-300">
                 Experience the perfect blend of functionality and aesthetics with our custom storage solutions. 
                 Our expert team specializes in creating personalized spaces that maximize your storage 

@@ -12,14 +12,14 @@ interface EditAppointmentModalProps {
   appointment: Appointment;
   isOpen: boolean;
   onClose: () => void;
-  onUpdate: (appointment: Appointment) => void;
+  onSave: (appointment: Appointment) => Promise<void>;
 }
 
 export function EditAppointmentModal({ 
   appointment, 
   isOpen, 
   onClose, 
-  onUpdate 
+  onSave 
 }: EditAppointmentModalProps) {
   const [formData, setFormData] = useState(appointment)
   const [isLoading, setIsLoading] = useState(false)
@@ -68,7 +68,7 @@ export function EditAppointmentModal({
 
       if (updatedData) {
         console.log('Datos actualizados:', updatedData)
-        onUpdate(updatedData as Appointment)
+        await onSave(updatedData as Appointment)
         toast.success('Cita actualizada correctamente')
       } else {
         console.error('No se recibieron datos actualizados')

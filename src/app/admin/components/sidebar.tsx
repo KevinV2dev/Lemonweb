@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { createBrowserClient } from '@/supabase/client'
 import { useRouter } from 'next/navigation'
 import { toast } from 'react-hot-toast'
+import Image from 'next/image'
 
 interface SidebarProps {
   currentSection: string
@@ -107,95 +108,102 @@ export function Sidebar({ currentSection, onSectionChange }: SidebarProps) {
   ]
 
   return (
-    <div className="w-64 bg-white h-full shadow-sm overflow-y-auto">
-      <div className="p-6">
-        <div className="flex items-center gap-2 mb-8">
-          <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-            <BookOpen className="w-5 h-5 text-white" />
+    <div className="w-64 bg-white h-full shadow-sm overflow-y-auto flex flex-col">
+      <div className="flex-1">
+        <div className="p-6">
+          <div className="flex items-center justify-center mb-8">
+            <Image
+              src="/icons/group.svg"
+              alt="Lemon"
+              width={114}
+              height={24}
+              className="w-[90px] sm:w-[114px]"
+            />
           </div>
-          <span className="font-semibold text-xl">Lemon</span>
-        </div>
 
-        <div className="mb-8">
-          <h2 className="text-xs font-semibold text-gray-400 mb-4 uppercase">Overview</h2>
-          <nav className="space-y-1">
-            {menuItems.map((item) => (
-              <motion.button
-                key={item.id}
-                whileHover={{ x: 4 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => onSectionChange(item.id)}
-                className={`flex items-center w-full px-3 py-2 text-sm rounded-lg transition-colors ${
-                  currentSection === item.id
-                    ? 'bg-indigo-50 text-indigo-600'
-                    : 'text-gray-600 hover:bg-gray-50'
-                }`}
-              >
-                {item.icon}
-                <span className="ml-3">{item.title}</span>
-              </motion.button>
-            ))}
-          </nav>
-        </div>
-
-        <div className="space-y-1">
-          <h2 className="text-xs font-semibold text-gray-400 mb-4 uppercase">Settings</h2>
-          <motion.button
-            whileHover={{ x: 4 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => onSectionChange('settings')}
-            className={`flex items-center w-full px-3 py-2 text-sm rounded-lg transition-colors ${
-              currentSection === 'settings'
-                ? 'bg-indigo-50 text-indigo-600'
-                : 'text-gray-600 hover:bg-gray-50'
-            }`}
-          >
-            <Settings className="w-5 h-5" />
-            <span className="ml-3">Settings</span>
-          </motion.button>
-
-          <motion.button
-            whileHover={{ x: 4 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={handleLogout}
-            className="flex items-center w-full px-3 py-2 text-sm rounded-lg text-red-600 hover:bg-red-50 transition-colors mt-2"
-          >
-            <LogOut className="w-5 h-5" />
-            <span className="ml-3">Cerrar Sesión</span>
-          </motion.button>
-
-          <motion.button
-            whileHover={{ x: 4 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={handleBackup}
-            className="flex items-center w-full px-3 py-2 text-sm rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
-          >
-            <Download className="w-5 h-5" />
-            <span className="ml-3">Create Backup</span>
-          </motion.button>
-
-          <motion.button
-            whileHover={{ x: 4 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={handleRestore}
-            className="flex items-center w-full px-3 py-2 text-sm rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
-          >
-            <Upload className="w-5 h-5" />
-            <span className="ml-3">Restore Backup</span>
-          </motion.button>
-        </div>
-
-        <div className="absolute bottom-6 left-6 right-6">
-          <div className="flex items-center gap-3 px-3 py-3">
-            <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-              <Users className="w-5 h-5 text-gray-500" />
-            </div>
+          <div className="space-y-8">
             <div>
-              <p className="text-sm font-medium text-gray-700">Admin User</p>
-              <p className="text-xs text-gray-500">admin@lemon.com</p>
+              <nav className="space-y-1">
+                {menuItems.map((item) => (
+                  <motion.button
+                    key={item.id}
+                    whileHover={{ x: 4 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => onSectionChange(item.id)}
+                    className={`flex items-center w-full px-4 py-2.5 text-sm rounded-lg transition-colors ${
+                      currentSection === item.id
+                        ? 'bg-night-lemon text-white'
+                        : 'text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    {item.icon}
+                    <span className="ml-3 font-medium">{item.title}</span>
+                  </motion.button>
+                ))}
+              </nav>
+            </div>
+
+            <div>
+              <h2 className="text-xs font-semibold text-gray-400 px-4 mb-3 uppercase">Settings</h2>
+              <nav className="space-y-1">
+                <motion.button
+                  whileHover={{ x: 4 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => onSectionChange('settings')}
+                  className={`flex items-center w-full px-4 py-2.5 text-sm rounded-lg transition-colors ${
+                    currentSection === 'settings'
+                      ? 'bg-night-lemon text-white'
+                      : 'text-gray-600 hover:bg-gray-50'
+                  }`}
+                >
+                  <Settings className="w-5 h-5" />
+                  <span className="ml-3 font-medium">Settings</span>
+                </motion.button>
+
+                <motion.button
+                  whileHover={{ x: 4 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleBackup}
+                  className="flex items-center w-full px-4 py-2.5 text-sm rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
+                >
+                  <Download className="w-5 h-5" />
+                  <span className="ml-3 font-medium">Create Backup</span>
+                </motion.button>
+
+                <motion.button
+                  whileHover={{ x: 4 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleRestore}
+                  className="flex items-center w-full px-4 py-2.5 text-sm rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
+                >
+                  <Upload className="w-5 h-5" />
+                  <span className="ml-3 font-medium">Restore Backup</span>
+                </motion.button>
+              </nav>
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="p-6 border-t border-gray-200">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+            <Users className="w-5 h-5 text-gray-500" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-gray-900">Admin User</p>
+            <p className="text-xs text-gray-500">admin@lemon.com</p>
+          </div>
+        </div>
+        <motion.button
+          whileHover={{ x: 4 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={handleLogout}
+          className="flex items-center w-full px-4 py-2.5 text-sm rounded-lg text-red-600 hover:bg-red-50 transition-colors mt-4"
+        >
+          <LogOut className="w-5 h-5" />
+          <span className="ml-3 font-medium">Cerrar Sesión</span>
+        </motion.button>
       </div>
     </div>
   )

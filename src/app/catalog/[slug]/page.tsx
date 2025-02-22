@@ -69,7 +69,7 @@ export default function ProductPage({ params }: ProductPageProps) {
   return (
     <div className="min-h-screen">
       <Navbar alwaysShowBackground />
-      <div className="pt-[92px] px-4 sm:px-[50px] pb-[50px]">
+      <div className="pt-[124px] px-4 sm:px-[50px] pb-[50px]">
         {/* Detalles del producto */}
         <ProductDetails product={product} />
 

@@ -10,9 +10,10 @@ import { ProductDetail } from './ProductDetail';
 interface ProductListProps {
   onEdit: (product: Product) => void;
   shouldRefresh?: boolean;
+  onRefreshComplete?: () => void;
 }
 
-export function ProductList({ onEdit, shouldRefresh }: ProductListProps) {
+export function ProductList({ onEdit, shouldRefresh, onRefreshComplete }: ProductListProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);

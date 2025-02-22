@@ -40,7 +40,6 @@ export const Navbar = ({ alwaysShowBackground = false }: NavbarProps) => {
   const links = [
     { href: '/', label: 'Home', exact: true },
     { href: '/catalog', label: 'Catalog' },
-    { href: '/about-us', label: 'About us' },
   ];
 
   const socialLinks = [

@@ -3,7 +3,7 @@ import Image from "next/image";
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { carouselData } from '@/app/carousel'; //Para mas Imagenes importar el Carousel.ts
-import BarraDerecha from '@/app/components/ui/barraderecha';
+import BarraDerecha from '@/app/components/ui/barraDerecha';
 import { Navbar } from '@/app/components/ui/navbar';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Preloader } from '@/app/components/ui/preloader';
@@ -202,7 +202,7 @@ export default function Home() {
             px-4 sm:px-[50px]
           pt-[120px] sm:pt-[140px]
           pb-[120px] sm:pb-[200px] lg:pb-[300px] 2xl:pb-[0px]
-          relative z-10
+          relative
           w-full
           h-full
         ">
@@ -336,7 +336,6 @@ export default function Home() {
               className="
               absolute top-1/2 -translate-y-1/2 right-6
               hidden sm:flex flex-col items-end gap-8
-              z-20
             "
             initial={{ y: 50, opacity: 0 }}
             animate={contentVisible ? { y: '-50%', opacity: 1 } : { y: 50, opacity: 0 }}
@@ -464,7 +463,7 @@ export default function Home() {
         {/* Bloque 3: Features */}
         <section className="w-full bg-white py-16 sm:py-24">
           <div className="max-w-[1920px] mx-auto px-4 sm:px-8 lg:px-32">
-            <div className="grid grid-cols-1 gap-12 w-full">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-12 w-full">
               {/* Feature 1 */}
               <div className="flex flex-col items-start p-4">
                 <div className="mb-4">

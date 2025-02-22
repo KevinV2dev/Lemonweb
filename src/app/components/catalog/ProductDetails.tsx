@@ -37,9 +37,9 @@ export function ProductDetails({ product }: ProductDetailsProps) {
         </div>
 
         {/* Información del producto */}
-        <div className="space-y-4">
-          <div className="relative pb-4 border-b border-heaven-lemon">
-            <div className="flex flex-col gap-2 pr-[140px]">
+        <div className="flex flex-col lg:min-h-full">
+          <div className="pb-4 border-b border-heaven-lemon">
+            <div className="flex flex-col gap-2">
               {product.category?.name && (
                 <Badge>{product.category.name}</Badge>
               )}
@@ -47,29 +47,30 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                 {product.name}
               </h1>
             </div>
-
-            <button 
-              onClick={() => router.push('/appointment')}
-              className="absolute top-0 right-0 bg-night-lemon text-white px-4 py-2 text-sm flex items-center gap-2 group cursor-pointer hover:bg-night-lemon/90 transition-colors"
-            >
-              Get a quote
-              <span className="transform transition-transform duration-200 ease-out group-hover:translate-x-[2px] group-hover:-translate-y-[2px]">
-                <Image
-                  src='/icons/Vector.svg'
-                  width={12} 
-                  height={12}
-                  alt="Arrow right"
-                  className="pointer-events-none"
-                />
-              </span>
-            </button>
           </div>
 
-          <div className="space-y-4">
+          <div className="mt-4">
             <p className="text-silver-lemon">
               {product.description || 'No description available'}
             </p>
           </div>
+
+          {/* Botón "Get a quote" al final y ancho completo */}
+          <button 
+            onClick={() => router.push('/appointment')}
+            className="w-full bg-night-lemon text-white py-3 text-sm flex items-center justify-center gap-2 group cursor-pointer hover:bg-night-lemon/90 transition-colors mt-8 lg:mt-auto"
+          >
+            Get a quote
+            <span className="transform transition-transform duration-200 ease-out group-hover:translate-x-[2px] group-hover:-translate-y-[2px]">
+              <Image
+                src='/icons/Vector.svg'
+                width={12} 
+                height={12}
+                alt="Arrow right"
+                className="pointer-events-none"
+              />
+            </span>
+          </button>
         </div>
       </div>
     </>

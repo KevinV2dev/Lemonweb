@@ -8,7 +8,7 @@ import { EditAppointmentModal } from './components/edit-appointment-modal'
 import { toast } from 'react-hot-toast'
 import { motion } from 'framer-motion'
 import { Sidebar } from './components/sidebar'
-import { Plus } from 'lucide-react'
+import { Plus, Calendar, Users, Package, ChevronDown } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createBrowserClient } from '@/supabase/client'
 import React from 'react'
@@ -16,6 +16,7 @@ import { ProductList } from './components/products/ProductList'
 import { ProductModal } from './components/products/ProductModal'
 import type { Product } from '@/types'
 import { CategoryManager } from './components/categories/CategoryManager'
+import Image from 'next/image'
 
 interface Appointment {
   id: string
@@ -233,339 +234,218 @@ function AdminPageContent() {
     </th>
   );
 
+  const renderDashboardCard = (title: string, value: number, icon: React.ReactNode, color: string) => (
+    <motion.div
+      whileHover={{ y: -4 }}
+      transition={{ duration: 0.2 }}
+      className="bg-white overflow-hidden"
+    >
+      <div className="p-6 flex items-center justify-between">
+        <div>
+          <p className="text-sm text-silver-lemon font-medium">{title}</p>
+          <p className="mt-2 text-3xl font-semibold text-night-lemon">{value}</p>
+        </div>
+        <div className={`p-3 ${color} bg-opacity-10 text-opacity-100`}>
+          {icon}
+        </div>
+      </div>
+    </motion.div>
+  );
+
   const renderContent = () => {
     switch (currentSection) {
       case 'dashboard':
         return (
           <div className="p-8">
-            <h1 className="text-2xl font-semibold text-gray-900 mb-6">Dashboard</h1>
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-3 mb-8">
-              <motion.div
-                whileHover={{ y: -4 }}
-                transition={{ duration: 0.2 }}
-                className="bg-white overflow-hidden shadow rounded-lg"
-              >
-                <div className="p-5">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                    <div className="ml-5 w-0 flex-1">
-                      <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">
-                          Citas Pendientes
-                        </dt>
-                        <dd className="text-lg font-medium text-gray-900">
-                          {appointments.filter(a => a.status === 'pending').length}
-                        </dd>
-                      </dl>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-
-              <motion.div
-                whileHover={{ y: -4 }}
-                transition={{ duration: 0.2 }}
-                className="bg-white overflow-hidden shadow rounded-lg"
-              >
-                <div className="p-5">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                    <div className="ml-5 w-0 flex-1">
-                      <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">
-                          Citas Completadas
-                        </dt>
-                        <dd className="text-lg font-medium text-gray-900">
-                          {appointments.filter(a => a.status === 'completed').length}
-                        </dd>
-                      </dl>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-
-              <motion.div
-                whileHover={{ y: -4 }}
-                transition={{ duration: 0.2 }}
-                className="bg-white overflow-hidden shadow rounded-lg"
-              >
-                <div className="p-5">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 12H4" />
-                      </svg>
-                    </div>
-                    <div className="ml-5 w-0 flex-1">
-                      <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">
-                          Citas Canceladas
-                        </dt>
-                        <dd className="text-lg font-medium text-gray-900">
-                          {appointments.filter(a => a.status === 'cancelled').length}
-                        </dd>
-                      </dl>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
+            <div className="flex items-center justify-between mb-8">
+              <h1 className="text-2xl font-semibold text-night-lemon">Dashboard Overview</h1>
+              <div className="flex items-center gap-4">
+                <button className="bg-night-lemon text-white px-4 py-2 flex items-center gap-2 group hover:bg-night-lemon/90 transition-colors">
+                  Last 30 Days
+                  <ChevronDown size={16} />
+                </button>
+              </div>
             </div>
-          </div>
-        )
-
-      case 'appointments':
-        return renderAppointments();
-
-      case 'products':
-        return (
-          <div className="p-8">
-            <div className="flex justify-between items-center mb-6">
-              <h1 className="text-2xl font-semibold text-gray-900">Products</h1>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 flex items-center"
-                onClick={() => {
-                  setSelectedProduct(undefined);
-                  setIsProductModalOpen(true);
-                }}
-              >
-                <Plus className="w-5 h-5 mr-2" />
-                Add Product
-              </motion.button>
+            
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 mb-8">
+              {renderDashboardCard(
+                'Total Appointments',
+                appointments.length,
+                <Calendar className="w-6 h-6 text-night-lemon" />,
+                'text-night-lemon'
+              )}
+              {renderDashboardCard(
+                'Active Clients',
+                appointments.filter(a => a.status === 'pending').length,
+                <Users className="w-6 h-6 text-night-lemon" />,
+                'text-night-lemon'
+              )}
+              {renderDashboardCard(
+                'Total Products',
+                0, // Aquí deberías poner el número real de productos
+                <Package className="w-6 h-6 text-night-lemon" />,
+                'text-night-lemon'
+              )}
             </div>
 
-            <div className="bg-white rounded-lg shadow">
-              <ProductList 
-                onEdit={handleEditProduct} 
-                shouldRefresh={shouldRefreshProducts}
-              />
+            <div className="bg-white p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-semibold text-night-lemon">Recent Appointments</h2>
+                <button 
+                  onClick={() => handleSectionChange('appointments')}
+                  className="text-night-lemon hover:text-night-lemon/80 text-sm font-medium"
+                >
+                  View all
+                </button>
+              </div>
+              
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead>
+                    <tr>
+                      <th className="px-3 py-3.5 text-left text-sm font-medium text-silver-lemon">ID</th>
+                      <th className="px-3 py-3.5 text-left text-sm font-medium text-silver-lemon">Client</th>
+                      <th className="px-3 py-3.5 text-left text-sm font-medium text-silver-lemon">Date</th>
+                      <th className="px-3 py-3.5 text-left text-sm font-medium text-silver-lemon">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 bg-white">
+                    {appointments.slice(0, 5).map((appointment) => (
+                      <tr key={appointment.id} className="hover:bg-gray-50">
+                        <td className="px-3 py-4 text-sm text-night-lemon">#{appointment.appointment_id}</td>
+                        <td className="px-3 py-4 text-sm text-night-lemon">{appointment.client_name}</td>
+                        <td className="px-3 py-4 text-sm text-night-lemon">
+                          {format(new Date(appointment.appointment_date), "d 'de' MMMM, yyyy", { locale: es })}
+                        </td>
+                        <td className="px-3 py-4 text-sm">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 ${getStatusColor(appointment.status)}`}>
+                            {getStatusText(appointment.status)}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         );
 
-      case 'categories':
-        return <CategoryManager />;
-
-      case 'settings':
+      case 'appointments':
         return (
           <div className="p-8">
-            <h1 className="text-2xl font-semibold text-gray-900 mb-6">Settings</h1>
-            <div className="bg-white rounded-lg shadow p-6">
-              <p className="text-gray-500">Settings coming soon...</p>
+            <div className="flex items-center justify-between mb-8">
+              <h1 className="text-2xl font-semibold text-night-lemon">Appointments</h1>
+              <div className="flex items-center gap-4">
+                <input
+                  type="text"
+                  placeholder="Search appointments..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="px-4 h-10 bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-night-lemon focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            <div className="bg-white">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead>
+                    <tr>
+                      <SortableHeader column="appointment_id" label="ID" />
+                      <SortableHeader column="client_name" label="Client" />
+                      <SortableHeader column="appointment_date" label="Date" />
+                      <SortableHeader column="preferred_contact_time" label="Time" />
+                      <SortableHeader column="status" label="Status" />
+                      <th className="px-3 py-3.5 text-left text-sm font-medium text-silver-lemon">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {sortedAppointments.map((appointment) => (
+                      <tr key={appointment.id} className="hover:bg-gray-50">
+                        <td className="px-3 py-4 text-sm text-night-lemon">#{appointment.appointment_id}</td>
+                        <td className="px-3 py-4">
+                          <div>
+                            <div className="text-sm text-night-lemon">{appointment.client_name}</div>
+                            <div className="text-sm text-silver-lemon">{appointment.client_email}</div>
+                          </div>
+                        </td>
+                        <td className="px-3 py-4 text-sm text-night-lemon">
+                          {format(new Date(appointment.appointment_date), "d 'de' MMMM, yyyy", { locale: es })}
+                        </td>
+                        <td className="px-3 py-4 text-sm text-night-lemon">
+                          {getPreferredContactTime(appointment.preferred_contact_time)}
+                        </td>
+                        <td className="px-3 py-4 text-sm">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 ${getStatusColor(appointment.status)}`}>
+                            {getStatusText(appointment.status)}
+                          </span>
+                        </td>
+                        <td className="px-3 py-4 text-sm text-night-lemon">
+                          <button
+                            onClick={() => {
+                              setSelectedAppointment(appointment)
+                              setIsModalOpen(true)
+                            }}
+                            className="text-night-lemon hover:text-night-lemon/80 mr-3"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDelete(appointment.id)}
+                            className="text-red-600 hover:text-red-800"
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
-        )
+        );
+
+      case 'products':
+        return (
+          <div className="p-8">
+            <div className="flex items-center justify-between mb-8">
+              <h1 className="text-2xl font-semibold text-night-lemon">Products</h1>
+              <button
+                onClick={() => {
+                  setSelectedProduct(undefined);
+                  setIsProductModalOpen(true);
+                }}
+                className="bg-night-lemon text-white px-4 py-2 flex items-center gap-2 group hover:bg-night-lemon/90 transition-colors"
+              >
+                <Plus size={20} />
+                Add Product
+              </button>
+            </div>
+            
+            <ProductList
+              onEdit={handleEditProduct}
+              shouldRefresh={shouldRefreshProducts}
+              onRefreshComplete={() => setShouldRefreshProducts(false)}
+            />
+          </div>
+        );
+
+      case 'categories':
+        return (
+          <div className="p-8">
+            <div className="flex items-center justify-between mb-8">
+              <h1 className="text-2xl font-semibold text-night-lemon">Categories</h1>
+            </div>
+            <CategoryManager />
+          </div>
+        );
 
       default:
-        return null
+        return null;
     }
-  }
-
-  const renderAppointments = () => {
-    return (
-      <div className="min-h-screen bg-gray-50 py-8 overflow-x-hidden">
-        {/* Stats Overview */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-3 mb-8">
-            <motion.div
-              whileHover={{ y: -4 }}
-              transition={{ duration: 0.2 }}
-              className="bg-white overflow-hidden shadow rounded-lg"
-            >
-              <div className="p-5">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">
-                        Citas Pendientes
-                      </dt>
-                      <dd className="text-lg font-medium text-gray-900">
-                        {appointments.filter(a => a.status === 'pending').length}
-                      </dd>
-                    </dl>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            <motion.div
-              whileHover={{ y: -4 }}
-              transition={{ duration: 0.2 }}
-              className="bg-white overflow-hidden shadow rounded-lg"
-            >
-              <div className="p-5">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">
-                        Citas Completadas
-                      </dt>
-                      <dd className="text-lg font-medium text-gray-900">
-                        {appointments.filter(a => a.status === 'completed').length}
-                      </dd>
-                    </dl>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            <motion.div
-              whileHover={{ y: -4 }}
-              transition={{ duration: 0.2 }}
-              className="bg-white overflow-hidden shadow rounded-lg"
-            >
-              <div className="p-5">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 12H4" />
-                    </svg>
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">
-                        Citas Canceladas
-                      </dt>
-                      <dd className="text-lg font-medium text-gray-900">
-                        {appointments.filter(a => a.status === 'cancelled').length}
-                      </dd>
-                    </dl>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Appointments Table */}
-          <div className="bg-white shadow rounded-lg overflow-hidden">
-            <div className="px-4 py-5 sm:p-6">
-              <div className="sm:flex sm:items-center sm:justify-between">
-                <div className="sm:flex-auto">
-                  <h1 className="text-xl font-semibold text-gray-900">Citas</h1>
-                  <p className="mt-2 text-sm text-gray-700">
-                    Listado de todas las citas agendadas
-                  </p>
-                </div>
-                <div className="mt-4 sm:mt-0 sm:flex-none">
-                  <motion.input
-                    whileFocus={{ scale: 1.01 }}
-                    transition={{ duration: 0.2 }}
-                    type="text"
-                    placeholder="Buscar por nombre, email o teléfono..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm p-2"
-                  />
-                </div>
-              </div>
-              
-              {isLoading ? (
-                <div className="flex justify-center items-center h-32">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-                </div>
-              ) : (
-                <div className="mt-8 flow-root">
-                  <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                    <div className="inline-block min-w-full py-2 align-middle">
-                      <table className="min-w-full divide-y divide-gray-300">
-                        <thead>
-                          <tr>
-                            <SortableHeader column="appointment_id" label="ID" />
-                            <SortableHeader column="client_name" label="Client" />
-                            <SortableHeader column="client_email" label="Email" />
-                            <SortableHeader column="phone" label="Phone" />
-                            <SortableHeader column="appointment_date" label="Date" />
-                            <SortableHeader column="preferred_contact_time" label="Contact" />
-                            <SortableHeader column="status" label="Status" />
-                            <SortableHeader column="created_at" label="Created" />
-                            <th className="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                              <span className="sr-only">Acciones</span>
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-200 bg-white">
-                          {sortedAppointments.map((appointment) => (
-                            <tr key={appointment.id} className="hover:bg-gray-50">
-                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                {appointment.appointment_id}
-                              </td>
-                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-900">
-                                {appointment.client_name}
-                              </td>
-                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                {appointment.client_email}
-                              </td>
-                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                {appointment.phone}
-                              </td>
-                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                {format(new Date(appointment.appointment_date), "d 'de' MMMM 'de' yyyy 'a las' HH:mm", { locale: es })}
-                              </td>
-                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                {getPreferredContactTime(appointment.preferred_contact_time)}
-                              </td>
-                              <td className="whitespace-nowrap px-3 py-4 text-sm">
-                                <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${getStatusColor(appointment.status)}`}>
-                                  {getStatusText(appointment.status)}
-                                </span>
-                              </td>
-                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                {format(new Date(appointment.created_at), "d MMM yyyy HH:mm", { locale: es })}
-                              </td>
-                              <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                                <motion.button
-                                  whileHover={{ scale: 1.05 }}
-                                  whileTap={{ scale: 0.95 }}
-                                  onClick={() => {
-                                    setSelectedAppointment(appointment)
-                                    setIsModalOpen(true)
-                                  }}
-                                  className="text-indigo-600 hover:text-indigo-900 mr-4"
-                                >
-                                  Editar
-                                </motion.button>
-                                <motion.button
-                                  whileHover={{ scale: 1.05 }}
-                                  whileTap={{ scale: 0.95 }}
-                                  onClick={() => handleDelete(appointment.id)}
-                                  className="text-red-600 hover:text-red-900"
-                                >
-                                  Eliminar
-                                </motion.button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
+  };
 
   const handleEditProduct = (product: Product) => {
     setSelectedProduct(product);
@@ -587,62 +467,70 @@ function AdminPageContent() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      <Sidebar 
-        currentSection={currentSection} 
-        onSectionChange={handleSectionChange}
-      />
-      <div className="flex-1 overflow-hidden">
-        <div className="p-8">
+    <div className="flex h-screen bg-gray-50">
+      {/* Sidebar */}
+      <Sidebar currentSection={currentSection} onSectionChange={handleSectionChange} />
+
+      {/* Contenido principal */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Header */}
+        <header className="bg-white border-b border-gray-200 h-16 flex items-center px-8">
+          <h1 className="text-xl font-semibold text-night-lemon">Panel de Administración</h1>
+        </header>
+
+        {/* Contenido principal con scroll */}
+        <main className="flex-1 overflow-y-auto bg-gray-50">
           {renderContent()}
-        </div>
+        </main>
       </div>
 
-      {selectedAppointment && (
+      {/* Modales */}
+      {isModalOpen && selectedAppointment && (
         <EditAppointmentModal
-          appointment={selectedAppointment}
           isOpen={isModalOpen}
+          appointment={selectedAppointment}
           onClose={() => {
             setIsModalOpen(false)
             setSelectedAppointment(null)
           }}
-          onUpdate={(updatedAppointment) => {
-            console.log('Appointment antes de actualizar:', appointments)
-            console.log('Appointment recibido para actualizar:', updatedAppointment)
-            
-            setAppointments(prev => {
-              const updated = prev.map(app => 
-                app.id === updatedAppointment.id ? updatedAppointment : app
+          onSave={async (updatedAppointment) => {
+            try {
+              const { error } = await supabase
+                .from('appointments')
+                .update({
+                  status: updatedAppointment.status,
+                  notes: updatedAppointment.notes
+                })
+                .eq('id', updatedAppointment.id)
+
+              if (error) throw error
+
+              setAppointments(prev =>
+                prev.map(app =>
+                  app.id === updatedAppointment.id ? updatedAppointment : app
+                )
               )
-              console.log('Appointments después de actualizar:', updated)
-              return updated
-            })
-            
-            setFilteredAppointments(prev => {
-              const updated = prev.map(app => 
-                app.id === updatedAppointment.id ? updatedAppointment : app
-              )
-              console.log('FilteredAppointments después de actualizar:', updated)
-              return updated
-            })
-            
-            setIsModalOpen(false)
-            setSelectedAppointment(null)
+              setIsModalOpen(false)
+              setSelectedAppointment(null)
+              toast.success('Cita actualizada correctamente')
+            } catch (error) {
+              console.error('Error al actualizar:', error)
+              toast.error('Error al actualizar la cita')
+            }
           }}
         />
       )}
 
-      <ProductModal
-        isOpen={isProductModalOpen}
-        onClose={() => {
-          setIsProductModalOpen(false);
-          setSelectedProduct(undefined);
-        }}
-        product={selectedProduct}
-        onSave={handleProductSave}
-      />
+      {isProductModalOpen && (
+        <ProductModal
+          isOpen={isProductModalOpen}
+          product={selectedProduct}
+          onClose={() => setIsProductModalOpen(false)}
+          onSave={handleProductSave}
+        />
+      )}
     </div>
-  )
+  );
 }
 
 // Componente principal con Suspense

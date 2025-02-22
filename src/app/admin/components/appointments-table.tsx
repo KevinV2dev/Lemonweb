@@ -176,7 +176,7 @@ export function AppointmentsTable({ appointments: initialAppointments }: Appoint
           appointment={editingAppointment}
           isOpen={isModalOpen}
           onClose={handleCloseModal}
-          onUpdate={(updatedAppointment) => {
+          onSave={async (updatedAppointment) => {
             handleUpdateAppointment(updatedAppointment)
             setIsModalOpen(false)
           }}

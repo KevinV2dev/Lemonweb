@@ -100,10 +100,10 @@ export function CatalogFilters({ categories, onSearch, onCategoryChange }: Catal
   return (
     <header className="w-full bg-white border-b border-gray-200">
       <Navbar alwaysShowBackground />
-      <div className="max-w-[1920px] mx-auto px-4 sm:px-[50px]">
-        <div ref={containerRef} className="flex items-center h-[72px] gap-4">
+      <div className="max-w-[1920px] px-4">
+        <div ref={containerRef} className="flex [@media(min-width:1120px)]:flex-row flex-col py-4 [@media(min-width:1120px)]:py-4 gap-4">
           {/* Buscador */}
-          <div className="w-64 flex-shrink-0">
+          <div className="[@media(min-width:1120px)]:w-64 w-full flex-shrink-0">
             <div className="relative">
               <input
                 type="text"
