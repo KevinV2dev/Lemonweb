@@ -3,7 +3,7 @@ import Image from "next/image";
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { carouselData } from '@/app/carousel'; //Para mas Imagenes importar el Carousel.ts
-import BarraDerecha from '@/app/components/ui/barraDerecha';
+import BarraDerecha from '@/app/components/ui/toolbar';
 import { Navbar } from '@/app/components/ui/navbar';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Preloader } from '@/app/components/ui/preloader';
