@@ -14,6 +14,12 @@ const saira = Saira({
 
 const inter = Inter({ subsets: ['latin'] })
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export const metadata: Metadata = {
   title: "Lemon - Furniture Design and Manufacturing",
   description: "We design and manufacture high-quality furniture. Specialists in custom furniture, interior design, and tailored solutions.",
@@ -27,7 +33,7 @@ export const metadata: Metadata = {
     siteName: 'Lemon',
     images: [
       {
-        url: '/og-image.jpg',
+        url: '/thumbnail.png',
         width: 1200,
         height: 630,
         alt: 'Lemon - Furniture Design and Manufacturing',
@@ -40,34 +46,16 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Lemon - Furniture Design and Manufacturing',
     description: 'We design and manufacture high-quality furniture. Specialists in custom furniture.',
-    images: ['/twitter-image.jpg'],
+    images: ['/thumbnail.png'],
     creator: '@lemon',
   },
   icons: {
     icon: [
       { url: '/icon.svg', type: 'image/svg+xml' },
-      { url: '/favicon.ico' },
-      { url: '/android-chrome-192x192.png', sizes: '192x192', type: 'image/png' },
-      { url: '/android-chrome-512x512.png', sizes: '512x512', type: 'image/png' },
-    ],
-    shortcut: '/favicon.ico',
-    apple: [
-      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
-    ],
-    other: [
-      {
-        rel: 'mask-icon',
-        url: '/safari-pinned-tab.svg',
-        color: '#000000'
-      }
+      { url: '/favicon.ico' }
     ]
   },
   manifest: '/site.webmanifest',
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-  },
   verification: {
     google: 'google-site-verification-code',
   },
@@ -105,6 +93,16 @@ export default function RootLayout({
         <meta name="format-detection" content="telephone=no" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+        {/* Metaetiquetas generales para previsualizaciones */}
+        <meta property="image" content="/thumbnail.png" />
+        <meta name="image" content="/thumbnail.png" />
+        <meta itemProp="image" content="/thumbnail.png" />
+        {/* Schema.org para Google */}
+        <meta itemProp="name" content="Lemon - Furniture Design and Manufacturing" />
+        <meta itemProp="description" content="We design and manufacture high-quality furniture. Specialists in custom furniture, interior design, and tailored solutions." />
+        {/* WhatsApp y otras apps de mensajería */}
+        <meta property="og:image:secure_url" content="/thumbnail.png" />
+        <meta property="og:image:type" content="image/png" />
       </head>
       <body className="antialiased">
         <Providers>

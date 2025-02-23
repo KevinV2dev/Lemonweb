@@ -110,7 +110,7 @@ export function ProductList({ onEdit, shouldRefresh, onRefreshComplete }: Produc
   return (
     <>
       <div className="p-4 space-y-4">
-        <div className="flex gap-4">
+        <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex-1">
             <div className="relative">
               <input
@@ -118,16 +118,16 @@ export function ProductList({ onEdit, shouldRefresh, onRefreshComplete }: Produc
                 placeholder="Search products..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                className="w-full pl-10 pr-4 py-2 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-night-lemon focus:border-transparent"
               />
-              <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+              <Search className="absolute left-3 top-2.5 h-5 w-5 text-silver-lemon" />
             </div>
           </div>
 
           <select
             value={selectedCategory || ''}
             onChange={(e) => setSelectedCategory(e.target.value ? Number(e.target.value) : null)}
-            className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+            className="px-4 py-2 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-night-lemon focus:border-transparent"
           >
             <option value="">All categories</option>
             {categories.map((category) => (
@@ -138,99 +138,169 @@ export function ProductList({ onEdit, shouldRefresh, onRefreshComplete }: Produc
           </select>
         </div>
 
-        <div className="text-sm text-gray-500">
+        <div className="text-sm text-silver-lemon">
           {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'} found
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Image
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Name
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Category
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {filteredProducts.map((product) => (
-              <tr key={product.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="h-10 w-10 rounded-lg bg-gray-200 overflow-hidden">
-                    <img
-                      src={product.main_image}
-                      alt={product.name}
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">{product.name}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center gap-2">
-                    <div className="text-sm text-gray-500">{product.category?.name}</div>
-                    {product.categories && product.categories.length > 1 && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
-                        +{product.categories.length - 1}
-                      </span>
-                    )}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`inline-flex px-2 text-xs font-semibold rounded-full ${
-                    product.active
+      {/* Vista móvil */}
+      <div className="block lg:hidden">
+        <div className="space-y-4">
+          {filteredProducts.map((product) => (
+            <div key={product.id} className="bg-white border border-gray-200 p-4 space-y-3">
+              <div className="flex items-center space-x-4">
+                <div className="h-16 w-16 bg-gray-100 overflow-hidden flex-shrink-0">
+                  <img
+                    src={product.main_image}
+                    alt={product.name}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-sm font-medium text-night-lemon truncate">{product.name}</h3>
+                  <p className="text-sm text-silver-lemon mt-1">{product.category?.name}</p>
+                  <span className={`inline-flex px-2 py-0.5 mt-2 text-xs font-medium rounded-full ${
+                    product.status === 'published'
                       ? 'bg-green-100 text-green-800'
-                      : 'bg-red-100 text-red-800'
+                      : product.status === 'draft'
+                      ? 'bg-gray-100 text-gray-800'
+                      : product.status === 'out_of_stock'
+                      ? 'bg-red-100 text-red-800'
+                      : 'bg-yellow-100 text-yellow-800'
                   }`}>
-                    {product.active ? 'Active' : 'Inactive'}
+                    {product.status === 'published' && 'Published'}
+                    {product.status === 'draft' && 'Draft'}
+                    {product.status === 'out_of_stock' && 'Out of Stock'}
+                    {product.status === 'review' && 'Under Review'}
                   </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => setSelectedProductId(product.id)}
-                      className="text-gray-600 hover:text-gray-900"
-                      title="View details"
-                    >
-                      <Eye className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={() => onEdit(product)}
-                      className="text-blue-600 hover:text-blue-900"
-                      title="Edit product"
-                    >
-                      <Edit className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={() => setDeleteConfirmation({
-                        isOpen: true,
-                        productId: product.id,
-                        productName: product.name
-                      })}
-                      className="text-red-600 hover:text-red-900"
-                      title="Delete product"
-                    >
-                      <Trash className="w-5 h-5" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                </div>
+              </div>
+              <div className="flex items-center justify-end space-x-2 pt-3 border-t border-gray-100">
+                <button
+                  onClick={() => setSelectedProductId(product.id)}
+                  className="p-2 text-silver-lemon hover:text-night-lemon transition-colors"
+                >
+                  <Eye className="h-5 w-5" />
+                </button>
+                <button
+                  onClick={() => onEdit(product)}
+                  className="p-2 text-silver-lemon hover:text-night-lemon transition-colors"
+                >
+                  <Edit className="h-5 w-5" />
+                </button>
+                <button
+                  onClick={() => setDeleteConfirmation({
+                    isOpen: true,
+                    productId: product.id,
+                    productName: product.name
+                  })}
+                  className="p-2 text-red-600 hover:text-red-800 transition-colors"
+                >
+                  <Trash className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Vista desktop */}
+      <div className="hidden lg:block">
+        <div className="bg-white border border-gray-200">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead>
+                <tr>
+                  <th scope="col" className="sticky left-0 bg-white px-3 py-3.5 text-left text-xs font-medium text-silver-lemon uppercase tracking-wider">
+                    Image
+                  </th>
+                  <th scope="col" className="px-3 py-3.5 text-left text-xs font-medium text-silver-lemon uppercase tracking-wider">
+                    Name
+                  </th>
+                  <th scope="col" className="px-3 py-3.5 text-left text-xs font-medium text-silver-lemon uppercase tracking-wider">
+                    Category
+                  </th>
+                  <th scope="col" className="px-3 py-3.5 text-left text-xs font-medium text-silver-lemon uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th scope="col" className="px-3 py-3.5 text-left text-xs font-medium text-silver-lemon uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {filteredProducts.map((product) => (
+                  <tr key={product.id} className="hover:bg-gray-50">
+                    <td className="sticky left-0 bg-white hover:bg-gray-50 px-3 py-4">
+                      <div className="h-10 w-10 bg-gray-100 overflow-hidden">
+                        <img
+                          src={product.main_image}
+                          alt={product.name}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                    </td>
+                    <td className="px-3 py-4">
+                      <div className="text-sm font-medium text-night-lemon">{product.name}</div>
+                    </td>
+                    <td className="px-3 py-4">
+                      <div className="flex items-center gap-2">
+                        <div className="text-sm text-silver-lemon">{product.category?.name}</div>
+                        {product.categories && product.categories.length > 1 && (
+                          <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-gray-100 text-night-lemon rounded-full">
+                            +{product.categories.length - 1}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-3 py-4">
+                      <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${
+                        product.status === 'published'
+                          ? 'bg-green-100 text-green-800'
+                          : product.status === 'draft'
+                          ? 'bg-gray-100 text-gray-800'
+                          : product.status === 'out_of_stock'
+                          ? 'bg-red-100 text-red-800'
+                          : 'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {product.status === 'published' && 'Published'}
+                        {product.status === 'draft' && 'Draft'}
+                        {product.status === 'out_of_stock' && 'Out of Stock'}
+                        {product.status === 'review' && 'Under Review'}
+                      </span>
+                    </td>
+                    <td className="px-3 py-4">
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => setSelectedProductId(product.id)}
+                          className="p-2 text-silver-lemon hover:text-night-lemon transition-colors"
+                        >
+                          <Eye className="h-5 w-5" />
+                        </button>
+                        <button
+                          onClick={() => onEdit(product)}
+                          className="p-2 text-silver-lemon hover:text-night-lemon transition-colors"
+                        >
+                          <Edit className="h-5 w-5" />
+                        </button>
+                        <button
+                          onClick={() => setDeleteConfirmation({
+                            isOpen: true,
+                            productId: product.id,
+                            productName: product.name
+                          })}
+                          className="p-2 text-red-600 hover:text-red-800 transition-colors"
+                        >
+                          <Trash className="h-5 w-5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
       {deleteConfirmation.isOpen && (

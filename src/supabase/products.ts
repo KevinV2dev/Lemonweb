@@ -27,9 +27,9 @@ export async function getProduct(slug: string): Promise<Product> {
 }
 
 export const productService = {
-  async getProducts() {
+  async getProducts(onlyPublished = false) {
     console.log('Iniciando getProducts');
-    const { data: products, error: productsError } = await supabase
+    const query = supabase
       .from('products')
       .select(`
         *,
@@ -37,6 +37,13 @@ export const productService = {
         category:category_id(*)
       `)
       .order('created_at', { ascending: false });
+
+    // Si onlyPublished es true, solo devolver productos publicados
+    if (onlyPublished) {
+      query.eq('status', 'published');
+    }
+
+    const { data: products, error: productsError } = await query;
 
     if (productsError) throw productsError;
     console.log('Productos obtenidos:', products);
@@ -80,7 +87,7 @@ export const productService = {
           category:category_id(*)
         `)
         .eq('slug', decodedSlug)
-        .eq('active', true)
+        .eq('status', 'published')
         .single();
 
       if (productError) {
@@ -536,7 +543,7 @@ export const productService = {
         additional_images:product_images(*)
       `)
       .eq('category_id', categoryId)
-      .eq('active', true)
+      .eq('status', 'published')
       .order('created_at', { ascending: false });
 
     if (error) throw error;

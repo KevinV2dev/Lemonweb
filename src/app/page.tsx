@@ -200,7 +200,7 @@ export default function Home() {
         <div className="
           flex flex-col justify-center
           mt-24 sm:mt-0
-            px-4 sm:px-[50px]
+            px-4
           pt-[120px] sm:pt-[140px]
           pb-[120px] sm:pb-[200px] lg:pb-[300px] 2xl:pb-[0px]
           relative

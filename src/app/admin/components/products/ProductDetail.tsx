@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { productService } from '@/supabase/products';
 import type { Product } from '@/types';
 import { toast } from 'react-hot-toast';
-import { X, Edit, Trash, Image as ImageIcon } from 'lucide-react';
+import { X, Edit2, Trash2, Image as ImageIcon } from 'lucide-react';
 import Image from 'next/image';
 
 interface ProductDetailProps {
@@ -23,12 +23,20 @@ export function ProductDetail({ productId, onClose, onEdit, onDelete }: ProductD
 
   useEffect(() => {
     loadProduct();
+    // Prevenir scroll en el body
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
   }, [productId]);
 
   const loadProduct = async () => {
     try {
-      const data = await productService.getProductById(productId);
-      setProduct(data);
+      const data = await productService.getProducts();
+      const productWithCategories = data.find(p => p.id === productId);
+      if (productWithCategories) {
+        setProduct(productWithCategories);
+      }
     } catch (error) {
       toast.error('Error loading product');
       console.error(error);
@@ -50,110 +58,155 @@ export function ProductDetail({ productId, onClose, onEdit, onDelete }: ProductD
   const images = [product.main_image, ...(product.additional_images?.map(img => img.image_url) || [])];
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-lg w-full max-w-4xl shadow-xl overflow-hidden"
-      >
-        <div className="flex justify-between items-center p-6 border-b">
-          <h2 className="text-2xl font-semibold">Product Details</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-            <X className="w-6 h-6" />
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
-          {/* Image Gallery */}
-          <div className="space-y-4">
-            <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
-              <Image
-                src={images[currentImageIndex]}
-                alt={product.name}
-                fill
-                className="object-cover"
-              />
-            </div>
-            
-            {images.length > 1 && (
-              <div className="grid grid-cols-4 gap-2">
-                {images.map((image, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setCurrentImageIndex(index)}
-                    className={`relative aspect-square rounded-md overflow-hidden ${
-                      currentImageIndex === index ? 'ring-2 ring-black' : ''
-                    }`}
-                  >
-                    <Image
-                      src={image}
-                      alt={`${product.name} ${index + 1}`}
-                      fill
-                      className="object-cover"
-                    />
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Product Details */}
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-lg font-medium">Description</h3>
-              <p className="text-gray-600 mt-2">{product.description || 'No description'}</p>
-            </div>
-
-            <div>
-              <h3 className="text-lg font-medium">Category</h3>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {product.category?.name && (
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
-                    {product.category.name} (Principal)
-                  </span>
-                )}
-                {product.categories?.map((category) => (
-                  category.id !== product.category_id && (
-                    <span key={category.id} className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
-                      {category.name}
-                    </span>
-                  )
-                ))}
+    <div className="fixed inset-0 z-50">
+      <div className="absolute inset-0 bg-black bg-opacity-50" onClick={onClose} />
+      
+      {/* Modal Container */}
+      <div className="fixed inset-0 pointer-events-none p-4">
+        <div className="flex items-center justify-center min-h-full">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="relative bg-white w-[calc(100%-32px)] max-w-4xl rounded-lg shadow-xl pointer-events-auto max-h-[calc(100vh-32px)] flex flex-col"
+          >
+            {/* Header - Fixed */}
+            <div className="flex-none border-b border-gray-200 rounded-t-lg">
+              <div className="flex justify-between items-center p-4">
+                <h2 className="text-xl font-semibold text-night-lemon">Product Details</h2>
+                <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+                  <X className="w-5 h-5" />
+                </button>
               </div>
             </div>
 
-            <div>
-              <h3 className="text-lg font-medium">Status</h3>
-              <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                product.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-              }`}>
-                {product.active ? 'Active' : 'Inactive'}
-              </span>
-            </div>
-
-            <div className="flex gap-4 pt-6">
-              <button
-                onClick={() => onEdit(product)}
-                className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800"
-              >
-                <Edit className="w-4 h-4" />
-                Edit
-              </button>
-              <button
-                onClick={() => {
-                  if (window.confirm('Are you sure you want to delete this product?')) {
-                    onDelete(product.id);
+            {/* Content - Scrollable */}
+            <div 
+              className="overflow-y-auto flex-1"
+              onWheel={(e) => {
+                if (e.target instanceof HTMLElement) {
+                  const element = e.currentTarget;
+                  const isScrollable = element.scrollHeight > element.clientHeight;
+                  if (isScrollable) {
+                    e.stopPropagation();
                   }
-                }}
-                className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-              >
-                <Trash className="w-4 h-4" />
-                Delete
-              </button>
+                }
+              }}
+              style={{
+                scrollbarWidth: 'thin',
+                scrollbarColor: '#CBD5E0 transparent'
+              }}
+            >
+              <div className="p-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Image Gallery */}
+                  <div className="space-y-4">
+                    <div className="relative aspect-square bg-gray-100 border border-gray-200">
+                      <Image
+                        src={images[currentImageIndex]}
+                        alt={product.name}
+                        fill
+                        className="object-contain"
+                      />
+                    </div>
+                    
+                    {images.length > 1 && (
+                      <div className="grid grid-cols-4 gap-2">
+                        {images.map((image, index) => (
+                          <button
+                            key={index}
+                            onClick={() => setCurrentImageIndex(index)}
+                            className={`relative aspect-square bg-gray-100 border ${
+                              currentImageIndex === index ? 'border-night-lemon' : 'border-gray-200'
+                            }`}
+                          >
+                            <Image
+                              src={image}
+                              alt={`${product.name} ${index + 1}`}
+                              fill
+                              className="object-contain"
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Product Details */}
+                  <div className="space-y-6">
+                    <div>
+                      <h3 className="text-sm font-medium text-silver-lemon mb-1">Description</h3>
+                      <p className="text-night-lemon">{product.description || 'No description'}</p>
+                    </div>
+
+                    <div>
+                      <h3 className="text-sm font-medium text-silver-lemon mb-1">Category</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {product.categories?.map((category) => (
+                          <span 
+                            key={category.id} 
+                            className={`inline-flex items-center px-3 py-1 text-sm font-medium ${
+                              category.id === product.category_id 
+                                ? 'bg-night-lemon text-white'
+                                : 'bg-gray-100 text-night-lemon'
+                            }`}
+                          >
+                            {category.name}
+                            {category.id === product.category_id && (
+                              <span className="ml-2 text-xs text-white/75">(Principal)</span>
+                            )}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <h3 className="text-sm font-medium text-silver-lemon mb-1">Status</h3>
+                      <span className={`inline-flex items-center px-3 py-1 text-sm font-medium ${
+                        product.status === 'published'
+                          ? 'bg-green-100 text-green-800'
+                          : product.status === 'draft'
+                          ? 'bg-gray-100 text-gray-800'
+                          : product.status === 'out_of_stock'
+                          ? 'bg-red-100 text-red-800'
+                          : 'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {product.status === 'published' && 'Published'}
+                        {product.status === 'draft' && 'Draft'}
+                        {product.status === 'out_of_stock' && 'Out of Stock'}
+                        {product.status === 'review' && 'Under Review'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
+
+            {/* Footer - Fixed */}
+            <div className="flex-none border-t border-gray-200">
+              <div className="flex justify-end gap-3 p-4">
+                <button
+                  onClick={() => onEdit(product)}
+                  className="inline-flex items-center px-4 py-2 bg-night-lemon text-white hover:bg-night-lemon/90 transition-colors gap-2"
+                >
+                  <Edit2 size={16} />
+                  Edit
+                </button>
+                <button
+                  onClick={() => {
+                    if (window.confirm('Are you sure you want to delete this product?')) {
+                      onDelete(product.id);
+                    }
+                  }}
+                  className="inline-flex items-center px-4 py-2 bg-red-600 text-white hover:bg-red-700 transition-colors gap-2"
+                >
+                  <Trash2 size={16} />
+                  Delete
+                </button>
+              </div>
+            </div>
+          </motion.div>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 } 

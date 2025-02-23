@@ -1,6 +1,6 @@
 'use client'
 
-import { Calendar, Package, Settings, LayoutDashboard, LogOut, BookOpen, Users, Download, Upload, FolderTree } from 'lucide-react'
+import { Calendar, Package, Settings, LayoutDashboard, LogOut, BookOpen, Users, Download, Upload, FolderTree, X } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { createBrowserClient } from '@/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -23,6 +23,11 @@ export function Sidebar({ currentSection, onSectionChange }: SidebarProps) {
     } catch (error) {
       console.error('Error during logout:', error)
     }
+  }
+
+  const handleSectionChange = (section: string) => {
+    onSectionChange(section)
+    router.push(`/admin?section=${section}`, { scroll: false })
   }
 
   const handleBackup = async () => {
@@ -108,98 +113,57 @@ export function Sidebar({ currentSection, onSectionChange }: SidebarProps) {
   ]
 
   return (
-    <div className="w-64 bg-white h-full shadow-sm overflow-y-auto flex flex-col">
-      <div className="flex-1">
-        <div className="p-6">
-          <div className="flex items-center justify-center mb-8">
+    <div className="w-64 h-full bg-white border-r border-gray-200 flex flex-col">
+      <div className="h-16 px-6 border-b border-gray-200 flex items-center justify-between">
+        <div className="flex items-center">
+          <div className="w-8 h-8 flex items-center justify-center">
             <Image
-              src="/icons/lemon.svg"
-              alt="Lemon"
-              width={114}
-              height={24}
-              className="w-[90px] sm:w-[114px]"
+              src="/icons/simbolo-black.svg"
+              alt="Lemon Logo"
+              width={28}
+              height={28}
+              priority
+              className="w-7 h-7"
             />
           </div>
+        </div>
+        <button
+          onClick={() => onSectionChange(currentSection)}
+          className="p-2 hover:bg-gray-100 lg:hidden"
+        >
+          <X className="h-5 w-5 text-gray-500" />
+        </button>
+      </div>
 
-          <div className="space-y-8">
-            <div>
-              <nav className="space-y-1">
-                {menuItems.map((item) => (
-                  <motion.button
-                    key={item.id}
-                    whileHover={{ x: 4 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => onSectionChange(item.id)}
-                    className={`flex items-center w-full px-4 py-2.5 text-sm rounded-lg transition-colors ${
-                      currentSection === item.id
-                        ? 'bg-night-lemon text-white'
-                        : 'text-gray-600 hover:bg-gray-50'
-                    }`}
-                  >
-                    {item.icon}
-                    <span className="ml-3 font-medium">{item.title}</span>
-                  </motion.button>
-                ))}
-              </nav>
-            </div>
-
-            <div>
-              <h2 className="text-xs font-semibold text-gray-400 px-4 mb-3 uppercase">Settings</h2>
-              <nav className="space-y-1">
-                <motion.button
-                  whileHover={{ x: 4 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => onSectionChange('settings')}
-                  className={`flex items-center w-full px-4 py-2.5 text-sm rounded-lg transition-colors ${
-                    currentSection === 'settings'
-                      ? 'bg-night-lemon text-white'
-                      : 'text-gray-600 hover:bg-gray-50'
-                  }`}
-                >
-                  <Settings className="w-5 h-5" />
-                  <span className="ml-3 font-medium">Settings</span>
-                </motion.button>
-
-                <motion.button
-                  whileHover={{ x: 4 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleBackup}
-                  className="flex items-center w-full px-4 py-2.5 text-sm rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
-                >
-                  <Download className="w-5 h-5" />
-                  <span className="ml-3 font-medium">Create Backup</span>
-                </motion.button>
-
-                <motion.button
-                  whileHover={{ x: 4 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleRestore}
-                  className="flex items-center w-full px-4 py-2.5 text-sm rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
-                >
-                  <Upload className="w-5 h-5" />
-                  <span className="ml-3 font-medium">Restore Backup</span>
-                </motion.button>
-              </nav>
-            </div>
-          </div>
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-4">
+          <nav className="space-y-1">
+            {menuItems.map((item) => (
+              <motion.button
+                key={item.id}
+                whileHover={{ x: 4 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => handleSectionChange(item.id)}
+                className={`flex items-center w-full px-4 py-2.5 text-sm transition-colors ${
+                  currentSection === item.id
+                    ? 'bg-night-lemon text-white'
+                    : 'text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                {item.icon}
+                <span className="ml-3 font-medium">{item.title}</span>
+              </motion.button>
+            ))}
+          </nav>
         </div>
       </div>
 
-      <div className="p-6 border-t border-gray-200">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-            <Users className="w-5 h-5 text-gray-500" />
-          </div>
-          <div>
-            <p className="text-sm font-medium text-gray-900">Admin User</p>
-            <p className="text-xs text-gray-500">admin@lemon.com</p>
-          </div>
-        </div>
+      <div className="p-4 border-t border-gray-200">
         <motion.button
           whileHover={{ x: 4 }}
           whileTap={{ scale: 0.98 }}
           onClick={handleLogout}
-          className="flex items-center w-full px-4 py-2.5 text-sm rounded-lg text-red-600 hover:bg-red-50 transition-colors mt-4"
+          className="flex items-center w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
         >
           <LogOut className="w-5 h-5" />
           <span className="ml-3 font-medium">Logout</span>

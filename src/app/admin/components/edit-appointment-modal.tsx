@@ -5,6 +5,7 @@ import { type Appointment } from '@/types'
 import { createBrowserClient } from '@/supabase/client'
 import { toast } from 'react-hot-toast'
 import CustomDatePicker from '@/app/components/ui/calendar/date-picker'
+import { X } from 'lucide-react'
 
 type AppointmentStatus = 'pending' | 'completed' | 'cancelled';
 
@@ -83,20 +84,28 @@ export function EditAppointmentModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-white rounded-lg max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
-        <h2 className="text-lg font-semibold mb-4">Editar Cita</h2>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-semibold text-night-lemon">Edit Appointment</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Nombre
+              Name
             </label>
             <input
               type="text"
               value={formData.client_name}
               onChange={(e) => setFormData({...formData, client_name: e.target.value})}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
+              className="mt-1 block w-full border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-night-lemon focus:border-transparent"
               required
             />
           </div>
@@ -109,48 +118,52 @@ export function EditAppointmentModal({
               type="email"
               value={formData.client_email}
               onChange={(e) => setFormData({...formData, client_email: e.target.value})}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
+              className="mt-1 block w-full border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-night-lemon focus:border-transparent"
               required
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Teléfono
+              Phone
             </label>
             <input
               type="tel"
               value={formData.phone}
-              onChange={(e) => setFormData({...formData, phone: e.target.value})}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
+              onChange={(e) => {
+                const numericValue = e.target.value.replace(/[^0-9]/g, '').slice(0, 20);
+                setFormData({...formData, phone: numericValue});
+              }}
+              className="mt-1 block w-full border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-night-lemon focus:border-transparent"
+              maxLength={20}
               required
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Horario de contacto preferido
+              Preferred Contact Time
             </label>
             <select
               value={formData.preferred_contact_time}
               onChange={(e) => setFormData({...formData, preferred_contact_time: e.target.value as Appointment['preferred_contact_time']})}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
+              className="mt-1 block w-full border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-night-lemon focus:border-transparent"
               required
             >
-              <option value="morning">Mañana</option>
-              <option value="afternoon">Tarde</option>
-              <option value="evening">Noche</option>
+              <option value="morning">Morning</option>
+              <option value="afternoon">Afternoon</option>
+              <option value="evening">Evening</option>
             </select>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Dirección
+              Address
             </label>
             <textarea
               value={formData.address}
               onChange={(e) => setFormData({...formData, address: e.target.value})}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
+              className="mt-1 block w-full border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-night-lemon focus:border-transparent resize-none"
               rows={2}
               required
             />
@@ -158,35 +171,34 @@ export function EditAppointmentModal({
 
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Estado
+              Status
             </label>
             <select
               value={formData.status}
               onChange={(e) => {
                 const newStatus = e.target.value as AppointmentStatus
-                console.log('Cambiando status a:', newStatus)
+                console.log('Changing status to:', newStatus)
                 setFormData(prev => ({
                   ...prev,
                   status: newStatus
                 }))
               }}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
+              className="mt-1 block w-full border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-night-lemon focus:border-transparent"
             >
-              <option value="pending">Pendiente</option>
-              <option value="completed">Completada</option>
-              <option value="cancelled">Cancelada</option>
+              <option value="pending">Pending</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
             </select>
           </div>
 
-          <div className="mt-4">
+          <div>
             <label htmlFor="appointment_date" className="block text-sm font-medium text-gray-700">
-              Fecha
+              Date
             </label>
             <CustomDatePicker
               selected={new Date(formData.appointment_date)}
               onChange={(date) => {
                 if (date) {
-                  // Mantener la hora actual al cambiar la fecha
                   const currentDate = new Date(formData.appointment_date)
                   date.setHours(currentDate.getHours())
                   date.setMinutes(currentDate.getMinutes())
@@ -199,12 +211,12 @@ export function EditAppointmentModal({
 
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Notas
+              Message
             </label>
             <textarea
               value={formData.notes || ''}
               onChange={(e) => setFormData({...formData, notes: e.target.value})}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
+              className="mt-1 block w-full border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-night-lemon focus:border-transparent overflow-y-auto"
               rows={3}
             />
           </div>
@@ -213,16 +225,16 @@ export function EditAppointmentModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black"
+              className="px-4 py-2 border border-gray-200 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-night-lemon"
             >
-              Cancelar
+              Cancel
             </button>
             <button
               type="submit"
               disabled={isLoading}
-              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black disabled:opacity-50"
+              className="px-4 py-2 text-sm font-medium text-white bg-night-lemon hover:bg-night-lemon/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-night-lemon disabled:opacity-50"
             >
-              {isLoading ? 'Guardando...' : 'Guardar cambios'}
+              {isLoading ? 'Saving...' : 'Save changes'}
             </button>
           </div>
         </form>

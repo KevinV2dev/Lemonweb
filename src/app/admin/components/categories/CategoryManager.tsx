@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useState, useEffect } from 'react';
-import { Plus, GripVertical } from 'lucide-react';
+import { Plus, GripVertical, Trash2 } from 'lucide-react';
 import { productService } from '@/supabase/products';
 import type { Category } from '@/types';
 import { toast } from 'react-hot-toast';
@@ -89,13 +89,12 @@ export function CategoryManager() {
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Categories</h2>
+      <div className="flex justify-between items-center mb-8">
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800"
+          className="w-full lg:w-auto bg-night-lemon text-white px-4 py-2 flex items-center justify-center gap-2 group hover:bg-night-lemon/90 transition-colors"
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-5 h-5" />
           New Category
         </button>
       </div>
@@ -106,7 +105,7 @@ export function CategoryManager() {
             <div
               {...provided.droppableProps}
               ref={provided.innerRef}
-              className="space-y-2"
+              className="space-y-3"
             >
               {categories.map((category, index) => (
                 <Draggable
@@ -118,29 +117,25 @@ export function CategoryManager() {
                     <div
                       ref={provided.innerRef}
                       {...provided.draggableProps}
-                      className={`flex items-center justify-between p-4 bg-white rounded-lg shadow transition-all ${
-                        snapshot.isDragging ? 'shadow-lg ring-2 ring-black ring-opacity-5' : 'hover:shadow-md'
+                      className={`flex items-center justify-between p-4 bg-white border border-gray-200 transition-all ${
+                        snapshot.isDragging ? 'shadow-lg ring-2 ring-night-lemon ring-opacity-5' : 'hover:border-night-lemon'
                       }`}
                     >
                       <div className="flex items-center gap-3">
                         <div {...provided.dragHandleProps} className="cursor-move">
                           <GripVertical className="w-5 h-5 text-gray-400" />
                         </div>
-                        <span className="font-medium">{category.name}</span>
-                        <span className="text-sm text-gray-500">({category.slug})</span>
+                        <span className="font-medium text-night-lemon">{category.name}</span>
+                        <span className="text-sm text-silver-lemon">({category.slug})</span>
                       </div>
                       
-                      <div className="flex items-center gap-4">
-                        <span className="text-sm text-gray-400">
-                          Order: {category.display_order}
-                        </span>
-                        <button
-                          onClick={() => handleDelete(category.id)}
-                          className="text-sm text-red-600 hover:text-red-800"
-                        >
-                          Delete
-                        </button>
-                      </div>
+                      <button
+                        onClick={() => handleDelete(category.id)}
+                        className="inline-flex items-center px-3 py-1.5 text-sm bg-red-600 text-white hover:bg-red-700 transition-colors gap-1.5"
+                      >
+                        <Trash2 size={14} />
+                        Delete
+                      </button>
                     </div>
                   )}
                 </Draggable>

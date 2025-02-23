@@ -22,15 +22,48 @@ body {
   background: #ffffff;
 }
 
-/* Ocultar scrollbar pero mantener funcionalidad */
-* {
+/* Ocultar scrollbar pero mantener funcionalidad, excepto en textareas */
+*:not(textarea) {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
 
-/* Ocultar scrollbar para Chrome, Safari y Opera */
-*::-webkit-scrollbar {
+/* Ocultar scrollbar para Chrome, Safari y Opera, excepto en textareas */
+*:not(textarea)::-webkit-scrollbar {
   display: none;
+}
+
+/* Estilos personalizados para scrollbars en textareas */
+textarea {
+  scrollbar-width: thin;
+  scrollbar-color: #CBD5E0 transparent;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+textarea::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+textarea::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+textarea::-webkit-scrollbar-thumb {
+  background-color: #CBD5E0;
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+textarea::-webkit-scrollbar-thumb:hover {
+  background-color: #A0AEC0;
+}
+
+/* Prevenir scroll en el body cuando hay un modal abierto */
+body.modal-open {
+  overflow: hidden;
 }
 
 /* Estilos personalizados para el datepicker */

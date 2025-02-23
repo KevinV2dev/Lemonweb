@@ -37,7 +37,7 @@ export interface Product {
   category?: Category;
   categories?: Category[];
   main_image: string;
-  active: boolean;
+  status: 'published' | 'draft' | 'out_of_stock' | 'review';
   created_at?: string;
   updated_at?: string;
   additional_images?: ProductImage[];

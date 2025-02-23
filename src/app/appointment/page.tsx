@@ -27,10 +27,67 @@ export default function AppointmentPage() {
   ];
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    const { name, value } = e.target;
+    
+    // Validación específica para el teléfono
+    if (name === 'phone') {
+      // Solo permitir números y limitar a 20 caracteres
+      const numericValue = value.replace(/[^0-9]/g, '').slice(0, 20);
+      setFormData(prev => ({
+        ...prev,
+        [name]: numericValue
+      }));
+      return;
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const validateStep = (currentStep: number): boolean => {
+    switch (currentStep) {
+      case 1:
+        if (!formData.name || !formData.email || !formData.phone) {
+          toast.error('Please fill in all fields before proceeding');
+          return false;
+        }
+        // Validar email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+          toast.error('Please enter a valid email address');
+          return false;
+        }
+        // Validar teléfono (solo números)
+        if (!/^\d+$/.test(formData.phone)) {
+          toast.error('Phone number must contain only numbers');
+          return false;
+        }
+        return true;
+
+      case 2:
+        if (!formData.date || !formData.timePreference || !formData.location) {
+          toast.error('Please fill in all fields before proceeding');
+          return false;
+        }
+        // Validar fecha
+        const selectedDate = new Date(formData.date);
+        if (selectedDate < new Date()) {
+          toast.error('Please select a future date');
+          return false;
+        }
+        return true;
+
+      default:
+        return true;
+    }
+  };
+
+  const handleNextStep = () => {
+    if (validateStep(step)) {
+      setStep(step + 1);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -201,6 +258,7 @@ export default function AppointmentPage() {
                       onChange={handleInputChange}
                       className="w-full h-12 px-4 bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-night-lemon focus:border-transparent"
                       placeholder="(123) 456-7890"
+                      maxLength={20}
                     />
                   </div>
                 </div>
@@ -307,7 +365,7 @@ export default function AppointmentPage() {
                 {step < 3 && (
                   <button
                     type="button"
-                    onClick={() => setStep(step + 1)}
+                    onClick={handleNextStep}
                     className="ml-auto bg-night-lemon text-white px-6 h-12 flex items-center gap-2 group hover:bg-night-lemon/90 transition-colors"
                   >
                     Next Step

@@ -13,8 +13,8 @@ const contactSchema = z.object({
   phone: z.string()
     .min(1, 'Phone number is required')
     .regex(/^[0-9]+$/, 'Numbers only')
-    .min(10, 'Phone number must be at least 10 digits')
-    .max(10, 'Phone number cannot exceed 10 digits'),
+    .min(1, 'Phone number is required')
+    .max(20, 'Phone number cannot exceed 20 digits'),
   preferred_contact_time: z.enum(['morning', 'afternoon', 'evening'], {
     required_error: 'Please select a contact time'
   }),
@@ -103,7 +103,12 @@ export function ContactFooter() {
                   type="tel"
                   placeholder="Phone"
                   className="w-full px-4 py-2 bg-white/10 border border-white/20 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/50"
-                  maxLength={10}
+                  maxLength={20}
+                  onChange={(e) => {
+                    const numericValue = e.target.value.replace(/[^0-9]/g, '').slice(0, 20);
+                    e.target.value = numericValue;
+                    register('phone').onChange(e);
+                  }}
                 />
                 {errors.phone && (
                   <p className="mt-1 text-sm text-yellow-lemon">{errors.phone.message}</p>

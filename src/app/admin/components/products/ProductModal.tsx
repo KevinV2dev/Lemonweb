@@ -23,7 +23,7 @@ export function ProductModal({ isOpen, onClose, product, onSave }: ProductModalP
     category_id: product?.category_id?.toString() || '',
     selectedCategories: product?.categories || [],
     main_image: product?.main_image || '',
-    active: product?.active ?? true,
+    status: product?.status || 'draft',
     additional_images: product?.additional_images || []
   };
 
@@ -45,7 +45,7 @@ export function ProductModal({ isOpen, onClose, product, onSave }: ProductModalP
         category_id: product.category_id?.toString() || '',
         selectedCategories: product.categories || [],
         main_image: product.main_image,
-        active: product.active,
+        status: product.status,
         additional_images: product.additional_images || []
       });
       setImagePreview(product.main_image);
@@ -55,6 +55,19 @@ export function ProductModal({ isOpen, onClose, product, onSave }: ProductModalP
       setImagePreview('');
     }
   }, [product, isOpen]);
+
+  // Manejar el scroll del body cuando el modal está abierto
+  useEffect(() => {
+    if (isOpen) {
+      document.body.classList.add('modal-open');
+    } else {
+      document.body.classList.remove('modal-open');
+    }
+
+    return () => {
+      document.body.classList.remove('modal-open');
+    };
+  }, [isOpen]);
 
   const loadCategories = async () => {
     try {
@@ -106,7 +119,7 @@ export function ProductModal({ isOpen, onClose, product, onSave }: ProductModalP
           .replace(/^-+|-+$/g, ''),         // Eliminar guiones al inicio y final
         description: formData.description,
         main_image: mainImageUrl,
-        active: formData.active,
+        status: formData.status,
         category_id: formData.selectedCategories[0]?.id,
         categories: formData.selectedCategories.map(cat => ({
           id: cat.id,
@@ -149,10 +162,17 @@ export function ProductModal({ isOpen, onClose, product, onSave }: ProductModalP
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-lg w-full max-w-4xl shadow-xl overflow-y-auto max-h-[90vh]"
+        className="bg-white w-full max-w-4xl max-h-[90vh] overflow-y-auto"
+        onWheel={(e) => {
+          const target = e.target as HTMLElement;
+          const isTextarea = target.tagName.toLowerCase() === 'textarea';
+          if (isTextarea) {
+            e.stopPropagation();
+          }
+        }}
       >
-        <div className="flex justify-between items-center p-6 border-b">
-          <h2 className="text-xl font-semibold">
+        <div className="flex justify-between items-center p-6 border-b border-gray-200">
+          <h2 className="text-xl font-semibold text-night-lemon">
             {product ? 'Edit Product' : 'New Product'}
           </h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
@@ -172,7 +192,7 @@ export function ProductModal({ isOpen, onClose, product, onSave }: ProductModalP
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                  className="w-full px-3 py-2 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-night-lemon focus:border-transparent"
                   required
                 />
               </div>
@@ -185,7 +205,7 @@ export function ProductModal({ isOpen, onClose, product, onSave }: ProductModalP
                   </span>
                 </label>
                 <div className="relative">
-                  <div className="absolute right-2 top-2 flex gap-2">
+                  <div className="absolute right-2 top-2 flex gap-2 z-10">
                     <button
                       type="button"
                       onClick={() => {
@@ -211,7 +231,7 @@ export function ProductModal({ isOpen, onClose, product, onSave }: ProductModalP
                           textarea.focus();
                         }, 0);
                       }}
-                      className="p-1.5 bg-gray-100 hover:bg-gray-200 rounded text-gray-600 text-sm flex items-center gap-1"
+                      className="p-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm flex items-center gap-1"
                     >
                       <span className="text-lg leading-none">•</span>
                       <span className="text-xs">Añadir viñeta</span>
@@ -222,7 +242,6 @@ export function ProductModal({ isOpen, onClose, product, onSave }: ProductModalP
                     value={formData.description}
                     onChange={(e) => {
                       let value = e.target.value;
-                      // Convertir • al inicio de línea en una viñeta real
                       value = value.split('\n').map(line => {
                         if (line.trim().startsWith('•')) {
                           return line;
@@ -233,7 +252,20 @@ export function ProductModal({ isOpen, onClose, product, onSave }: ProductModalP
                       }).join('\n');
                       setFormData({ ...formData, description: value });
                     }}
-                    className="w-full px-3 py-2 pr-28 border rounded-md focus:outline-none focus:ring-2 focus:ring-black resize-y overflow-y-scroll whitespace-pre-wrap min-h-[150px] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent hover:[&::-webkit-scrollbar-thumb]:bg-gray-400"
+                    onWheel={(e) => {
+                      if (e.target instanceof HTMLTextAreaElement) {
+                        const textarea = e.target;
+                        const isScrollable = textarea.scrollHeight > textarea.clientHeight;
+                        if (isScrollable) {
+                          e.stopPropagation();
+                        }
+                      }
+                    }}
+                    className="w-full px-3 py-2 pr-28 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-night-lemon focus:border-transparent min-h-[150px] resize-y overflow-y-auto"
+                    style={{
+                      scrollbarWidth: 'thin',
+                      scrollbarColor: '#CBD5E0 transparent'
+                    }}
                     rows={6}
                     placeholder="Describe el producto...&#10;• Usa viñetas para características&#10;• Cada línea que empiece con • o * se convertirá en viñeta"
                   />
@@ -282,7 +314,7 @@ export function ProductModal({ isOpen, onClose, product, onSave }: ProductModalP
                         }
                         e.target.value = "";
                       }}
-                      className="flex-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                      className="flex-1 px-3 py-2 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-night-lemon focus:border-transparent"
                     >
                       <option value="">Add category</option>
                       {categories
@@ -294,52 +326,30 @@ export function ProductModal({ isOpen, onClose, product, onSave }: ProductModalP
                         ))
                       }
                     </select>
-                    
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        const categoryName = prompt('Enter new category name:');
-                        if (categoryName) {
-                          try {
-                            const newCategory = await productService.createCategory({
-                              name: categoryName,
-                              slug: categoryName
-                                .toLowerCase()
-                                .normalize('NFD')
-                                .replace(/[\u0300-\u036f]/g, '')
-                                .replace(/[^a-z0-9]+/g, '-')
-                                .replace(/^-+|-+$/g, '')
-                            });
-                            await loadCategories();
-                            setFormData(prev => ({
-                              ...prev,
-                              selectedCategories: [...prev.selectedCategories, newCategory]
-                            }));
-                            toast.success('Category created successfully');
-                          } catch (error) {
-                            toast.error('Error creating category');
-                            console.error(error);
-                          }
-                        }
-                      }}
-                      className="px-3 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200"
-                    >
-                      <Plus className="w-5 h-5" />
-                    </button>
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={formData.active}
-                  onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
-                  className="h-4 w-4 text-black focus:ring-black border-gray-300 rounded"
-                />
-                <label className="ml-2 block text-sm text-gray-900">
-                  Active product
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Status
                 </label>
+                <select
+                  value={formData.status}
+                  onChange={(e) => setFormData({ ...formData, status: e.target.value as 'published' | 'draft' | 'out_of_stock' | 'review' })}
+                  className="w-full px-3 py-2 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-night-lemon focus:border-transparent"
+                >
+                  <option value="published">Published (Visible in catalog)</option>
+                  <option value="draft">Draft (Hidden from catalog)</option>
+                  <option value="out_of_stock">Out of Stock (Hidden from catalog)</option>
+                  <option value="review">Under Review (Hidden from catalog)</option>
+                </select>
+                <p className="mt-1 text-sm text-silver-lemon">
+                  {formData.status === 'published' && 'This product will be visible in the catalog'}
+                  {formData.status === 'draft' && 'This product is a draft and will not be visible in the catalog'}
+                  {formData.status === 'out_of_stock' && 'This product is out of stock and will be hidden from the catalog'}
+                  {formData.status === 'review' && 'This product is under review and will not be visible until approved'}
+                </p>
               </div>
             </div>
 
@@ -348,18 +358,28 @@ export function ProductModal({ isOpen, onClose, product, onSave }: ProductModalP
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Main Image
               </label>
-              <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+              <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-200 border-dashed">
                 {imagePreview ? (
-                  <div className="relative w-full aspect-square">
-                    <Image
+                  <div className="relative">
+                    <img
                       src={imagePreview}
                       alt="Preview"
-                      fill
-                      className="object-cover rounded-md"
+                      className="max-h-64 object-contain"
                     />
-                    <div className="absolute top-2 right-2 flex gap-2">
-                      <label className="cursor-pointer p-1 bg-blue-500 text-white rounded-full hover:bg-blue-600">
-                        <Replace className="w-4 h-4" />
+                    <div className="absolute top-0 right-0 p-2 flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedImage(null);
+                          setImagePreview('');
+                          setFormData(prev => ({ ...prev, main_image: '' }));
+                        }}
+                        className="p-1 bg-white text-gray-500 hover:text-gray-700"
+                      >
+                        <Trash className="w-5 h-5" />
+                      </button>
+                      <label className="p-1 bg-white text-gray-500 hover:text-gray-700 cursor-pointer">
+                        <Replace className="w-5 h-5" />
                         <input
                           type="file"
                           className="sr-only"
@@ -370,24 +390,13 @@ export function ProductModal({ isOpen, onClose, product, onSave }: ProductModalP
                           }}
                         />
                       </label>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedImage(null);
-                          setImagePreview('');
-                          setFormData({ ...formData, main_image: '' });
-                        }}
-                        className="p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
-                      >
-                        <Trash className="w-4 h-4" />
-                      </button>
                     </div>
                   </div>
                 ) : (
                   <div className="space-y-1 text-center">
                     <Upload className="mx-auto h-12 w-12 text-gray-400" />
                     <div className="flex text-sm text-gray-600">
-                      <label className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500">
+                      <label className="relative cursor-pointer font-medium text-night-lemon hover:text-night-lemon/80">
                         <span>Upload image</span>
                         <input
                           type="file"
@@ -410,14 +419,14 @@ export function ProductModal({ isOpen, onClose, product, onSave }: ProductModalP
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md"
+              className="px-4 py-2 border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isLoading}
-              className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 disabled:opacity-50"
+              className="px-4 py-2 bg-night-lemon text-white text-sm font-medium hover:bg-night-lemon/90 disabled:opacity-50"
             >
               {isLoading ? 'Saving...' : product ? 'Update' : 'Create'}
             </button>

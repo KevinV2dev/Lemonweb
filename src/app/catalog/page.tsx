@@ -20,7 +20,7 @@ export default function CatalogPage() {
     const loadData = async () => {
       try {
         const [productsData, categoriesData] = await Promise.all([
-          productService.getProducts(),
+          productService.getProducts(true),
           productService.getCategories()
         ]);
         setProducts(productsData);

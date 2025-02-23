@@ -15,38 +15,16 @@ export function RecommendedProducts({ currentProduct, categoryId }: RecommendedP
   useEffect(() => {
     const loadRecommendedProducts = async () => {
       try {
-        // Primero intentamos obtener productos de la misma categoría
+        setIsLoading(true);
+        // Obtener productos de la misma categoría
         const categoryProducts = await productService.getProductsByCategory(categoryId);
-        let filteredProducts = categoryProducts.filter(p => p.id !== currentProduct.id);
-
-        // Si no hay suficientes productos en la misma categoría (menos de 4)
-        if (filteredProducts.length < 4) {
-          // Obtenemos todos los productos
-          const allProducts = await productService.getProducts();
-          
-          // Filtramos productos que no sean de la categoría actual y que no sean el producto actual
-          const otherProducts = allProducts.filter(p => 
-            p.id !== currentProduct.id && 
-            p.category?.id.toString() !== categoryId
-          );
-
-          // Mezclamos los productos de otras categorías
-          const shuffledOtherProducts = otherProducts.sort(() => Math.random() - 0.5);
-
-          // Combinamos los productos de la misma categoría con otros hasta tener 4
-          filteredProducts = [
-            ...filteredProducts,
-            ...shuffledOtherProducts.slice(0, 4 - filteredProducts.length)
-          ];
-        }
-
-        // Barajamos el resultado final
-        const shuffledProducts = filteredProducts.sort(() => Math.random() - 0.5);
         
-        // Tomamos hasta 4 productos
-        const selectedProducts = shuffledProducts.slice(0, 4);
-        
-        setRecommendedProducts(selectedProducts);
+        // Filtrar el producto actual y limitar a 4 productos
+        const filteredProducts = categoryProducts
+          .filter(product => product.id !== currentProduct.id)
+          .slice(0, 4);
+
+        setRecommendedProducts(filteredProducts);
       } catch (error) {
         console.error('Error loading recommended products:', error);
       } finally {
@@ -54,7 +32,9 @@ export function RecommendedProducts({ currentProduct, categoryId }: RecommendedP
       }
     };
 
-    loadRecommendedProducts();
+    if (categoryId) {
+      loadRecommendedProducts();
+    }
   }, [categoryId, currentProduct.id]);
 
   if (isLoading) {
@@ -71,7 +51,7 @@ export function RecommendedProducts({ currentProduct, categoryId }: RecommendedP
        Recommended products
 
       </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-4">
         {recommendedProducts.map((product) => (
           <ProductCard key={product.id} {...product} />
         ))}

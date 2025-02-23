@@ -3,12 +3,12 @@
 import { useEffect, useState, Suspense } from 'react'
 import { supabase } from '@/supabase/products'
 import { format } from 'date-fns'
-import { es } from 'date-fns/locale'
+import { enUS } from 'date-fns/locale'
 import { EditAppointmentModal } from './components/edit-appointment-modal'
 import { toast } from 'react-hot-toast'
 import { motion } from 'framer-motion'
 import { Sidebar } from './components/sidebar'
-import { Plus, Calendar, Users, Package, ChevronDown } from 'lucide-react'
+import { Plus, Calendar, Users, Package, ChevronDown, Menu, Clock, Edit2, Trash2 } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createBrowserClient } from '@/supabase/client'
 import React from 'react'
@@ -43,7 +43,8 @@ function AdminPageContent() {
   const [isLoading, setIsLoading] = useState(true)
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [currentSection, setCurrentSection] = useState(searchParams.get('section') || 'appointments')
+  const [currentSection, setCurrentSection] = useState(searchParams.get('section') || 'dashboard')
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [sortConfig, setSortConfig] = useState<{
     key: keyof Appointment | null;
     direction: 'asc' | 'desc';
@@ -58,13 +59,21 @@ function AdminPageContent() {
   useEffect(() => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession()
-  if (!session) {
+      if (!session) {
         router.push('/admin/login')
       }
     }
 
     checkSession()
   }, [router, supabase.auth])
+
+  useEffect(() => {
+    // Actualizar la sección cuando cambie el parámetro de la URL
+    const section = searchParams.get('section')
+    if (section) {
+      setCurrentSection(section)
+    }
+  }, [searchParams])
 
   useEffect(() => {
     fetchAppointments()
@@ -77,7 +86,7 @@ function AdminPageContent() {
         appointment.client_name.toLowerCase().includes(searchLower) ||
         appointment.client_email.toLowerCase().includes(searchLower) ||
         appointment.phone.includes(searchLower) ||
-        format(new Date(appointment.appointment_date), "d 'de' MMMM 'de' yyyy", { locale: es })
+        format(new Date(appointment.appointment_date), "MMMM d, yyyy", { locale: enUS })
           .toLowerCase()
           .includes(searchLower) ||
         getPreferredContactTime(appointment.preferred_contact_time)
@@ -244,7 +253,7 @@ function AdminPageContent() {
     <motion.div
       whileHover={{ y: -4 }}
       transition={{ duration: 0.2 }}
-      className="bg-white overflow-hidden"
+      className="bg-white border border-gray-200"
     >
       <div className="p-6 flex items-center justify-between">
         <div>
@@ -262,8 +271,8 @@ function AdminPageContent() {
     switch (currentSection) {
       case 'dashboard':
         return (
-          <div className="p-8">
-            <div className="flex items-center justify-between mb-8">
+          <div className="p-4 lg:p-8">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
               <h1 className="text-2xl font-semibold text-night-lemon">Dashboard Overview</h1>
               <div className="flex items-center gap-4">
                 <button className="bg-night-lemon text-white px-4 py-2 flex items-center gap-2 group hover:bg-night-lemon/90 transition-colors">
@@ -273,7 +282,7 @@ function AdminPageContent() {
               </div>
             </div>
             
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {renderDashboardCard(
                 'Total Appointments',
                 appointments.length,
@@ -288,13 +297,13 @@ function AdminPageContent() {
               )}
               {renderDashboardCard(
                 'Total Products',
-                0, // Aquí deberías poner el número real de productos
+                0,
                 <Package className="w-6 h-6 text-night-lemon" />,
                 'text-night-lemon'
               )}
             </div>
 
-            <div className="bg-white p-6">
+            <div className="mt-8">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-semibold text-night-lemon">Recent Appointments</h2>
                 <button 
@@ -305,33 +314,35 @@ function AdminPageContent() {
                 </button>
               </div>
               
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead>
-                    <tr>
-                      <th className="px-3 py-3.5 text-left text-sm font-medium text-silver-lemon">ID</th>
-                      <th className="px-3 py-3.5 text-left text-sm font-medium text-silver-lemon">Client</th>
-                      <th className="px-3 py-3.5 text-left text-sm font-medium text-silver-lemon">Date</th>
-                      <th className="px-3 py-3.5 text-left text-sm font-medium text-silver-lemon">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200 bg-white">
-                    {appointments.slice(0, 5).map((appointment) => (
-                      <tr key={appointment.id} className="hover:bg-gray-50">
-                        <td className="px-3 py-4 text-sm text-night-lemon">#{appointment.appointment_id}</td>
-                        <td className="px-3 py-4 text-sm text-night-lemon">{appointment.client_name}</td>
-                        <td className="px-3 py-4 text-sm text-night-lemon">
-                          {format(new Date(appointment.appointment_date), "d 'de' MMMM, yyyy", { locale: es })}
-                        </td>
-                        <td className="px-3 py-4 text-sm">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 ${getStatusColor(appointment.status)}`}>
-                            {getStatusText(appointment.status)}
-                          </span>
-                        </td>
+              <div className="bg-white border border-gray-200">
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead>
+                      <tr>
+                        <th className="px-3 py-3.5 text-left text-sm font-medium text-silver-lemon">ID</th>
+                        <th className="px-3 py-3.5 text-left text-sm font-medium text-silver-lemon">Client</th>
+                        <th className="px-3 py-3.5 text-left text-sm font-medium text-silver-lemon">Date</th>
+                        <th className="px-3 py-3.5 text-left text-sm font-medium text-silver-lemon">Status</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200 bg-white">
+                      {appointments.slice(0, 5).map((appointment) => (
+                        <tr key={appointment.id} className="hover:bg-gray-50">
+                          <td className="px-3 py-4 text-sm text-night-lemon">#{appointment.appointment_id}</td>
+                          <td className="px-3 py-4 text-sm text-night-lemon">{appointment.client_name}</td>
+                          <td className="px-3 py-4 text-sm text-night-lemon">
+                            {format(new Date(appointment.appointment_date), "MMMM d, yyyy", { locale: enUS })}
+                          </td>
+                          <td className="px-3 py-4 text-sm">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 ${getStatusColor(appointment.status)}`}>
+                              {getStatusText(appointment.status)}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
@@ -339,79 +350,137 @@ function AdminPageContent() {
 
       case 'appointments':
         return (
-          <div className="p-8">
-            <div className="flex items-center justify-between mb-8">
+          <div className="p-4 lg:p-8">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
               <h1 className="text-2xl font-semibold text-night-lemon">Appointments</h1>
-              <div className="flex items-center gap-4">
+              <div className="w-full lg:w-auto">
                 <input
                   type="text"
                   placeholder="Search appointments..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="px-4 h-10 bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-night-lemon focus:border-transparent"
+                  className="w-full lg:w-auto px-4 h-10 bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-night-lemon focus:border-transparent"
                 />
               </div>
             </div>
 
-            <div className="bg-white">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead>
-                    <tr>
-                      <SortableHeader column="appointment_id" label="ID" />
-                      <SortableHeader column="client_name" label="Client" />
-                      <SortableHeader column="appointment_date" label="Date" />
-                      <SortableHeader column="preferred_contact_time" label="Time" />
-                      <SortableHeader column="status" label="Status" />
-                      <SortableHeader column="created_at" label="Created" />
-                      <th className="px-3 py-3.5 text-left text-sm font-medium text-silver-lemon">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {sortedAppointments.map((appointment) => (
-                      <tr key={appointment.id} className="hover:bg-gray-50">
-                        <td className="px-3 py-4 text-sm text-night-lemon">#{appointment.appointment_id}</td>
-                        <td className="px-3 py-4">
-                          <div>
-                            <div className="text-sm text-night-lemon">{appointment.client_name}</div>
-                            <div className="text-sm text-silver-lemon">{appointment.client_email}</div>
-                          </div>
-                        </td>
-                        <td className="px-3 py-4 text-sm text-night-lemon">
-                          {format(new Date(appointment.appointment_date), "d 'de' MMMM, yyyy", { locale: es })}
-                        </td>
-                        <td className="px-3 py-4 text-sm text-night-lemon">
-                          {getPreferredContactTime(appointment.preferred_contact_time)}
-                        </td>
-                        <td className="px-3 py-4 text-sm">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 ${getStatusColor(appointment.status)}`}>
-                            {getStatusText(appointment.status)}
-                          </span>
-                        </td>
-                        <td className="px-3 py-4 text-sm text-night-lemon">
-                          {format(new Date(appointment.created_at), "d MMM yyyy, HH:mm", { locale: es })}
-                        </td>
-                        <td className="px-3 py-4 text-sm text-night-lemon">
-                          <button
-                            onClick={() => {
-                              setSelectedAppointment(appointment)
-                              setIsModalOpen(true)
-                            }}
-                            className="text-night-lemon hover:text-night-lemon/80 mr-3"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleDelete(appointment.id)}
-                            className="text-red-600 hover:text-red-800"
-                          >
-                            Delete
-                          </button>
-                        </td>
+            {/* Vista móvil */}
+            <div className="block lg:hidden">
+              <div className="space-y-4">
+                {sortedAppointments.map((appointment) => (
+                  <div key={appointment.id} className="bg-white border border-gray-200 p-4 space-y-3">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <span className="text-xs text-silver-lemon">#{appointment.appointment_id}</span>
+                        <h3 className="text-sm font-medium text-night-lemon mt-1">{appointment.client_name}</h3>
+                        <p className="text-xs text-silver-lemon">{appointment.client_email}</p>
+                      </div>
+                      <span className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full ${getStatusColor(appointment.status)}`}>
+                        {getStatusText(appointment.status)}
+                      </span>
+                    </div>
+                    
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center text-silver-lemon">
+                        <Calendar className="w-4 h-4 mr-2" />
+                        {format(new Date(appointment.appointment_date), "MMMM d, yyyy", { locale: enUS })}
+                      </div>
+                      <div className="flex items-center text-silver-lemon">
+                        <Clock className="w-4 h-4 mr-2" />
+                        {getPreferredContactTime(appointment.preferred_contact_time)}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-end space-x-2 pt-3 border-t border-gray-100">
+                      <button
+                        onClick={() => {
+                          setSelectedAppointment(appointment)
+                          setIsModalOpen(true)
+                        }}
+                        className="inline-flex items-center px-3 py-1.5 text-sm bg-night-lemon text-white hover:bg-night-lemon/90 transition-colors gap-1.5"
+                      >
+                        <Edit2 size={14} />
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(appointment.id)}
+                        className="inline-flex items-center px-3 py-1.5 text-sm bg-red-600 text-white hover:bg-red-700 transition-colors gap-1.5"
+                      >
+                        <Trash2 size={14} />
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Vista desktop */}
+            <div className="hidden lg:block">
+              <div className="bg-white border border-gray-200">
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead>
+                      <tr>
+                        <SortableHeader column="appointment_id" label="ID" />
+                        <SortableHeader column="client_name" label="Client" />
+                        <SortableHeader column="appointment_date" label="Date" />
+                        <SortableHeader column="preferred_contact_time" label="Time" />
+                        <SortableHeader column="status" label="Status" />
+                        <SortableHeader column="created_at" label="Created" />
+                        <th className="px-3 py-3.5 text-left text-xs font-medium text-silver-lemon uppercase tracking-wider">Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {sortedAppointments.map((appointment) => (
+                        <tr key={appointment.id} className="hover:bg-gray-50">
+                          <td className="px-3 py-4 text-sm text-night-lemon">#{appointment.appointment_id}</td>
+                          <td className="px-3 py-4">
+                            <div>
+                              <div className="text-sm text-night-lemon">{appointment.client_name}</div>
+                              <div className="text-sm text-silver-lemon">{appointment.client_email}</div>
+                            </div>
+                          </td>
+                          <td className="px-3 py-4 text-sm text-night-lemon">
+                            {format(new Date(appointment.appointment_date), "MMMM d, yyyy", { locale: enUS })}
+                          </td>
+                          <td className="px-3 py-4 text-sm text-night-lemon">
+                            {getPreferredContactTime(appointment.preferred_contact_time)}
+                          </td>
+                          <td className="px-3 py-4">
+                            <span className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full ${getStatusColor(appointment.status)}`}>
+                              {getStatusText(appointment.status)}
+                            </span>
+                          </td>
+                          <td className="px-3 py-4 text-sm text-night-lemon">
+                            {format(new Date(appointment.created_at), "MMM d yyyy, HH:mm", { locale: enUS })}
+                          </td>
+                          <td className="px-3 py-4">
+                            <div className="flex items-center space-x-2">
+                              <button
+                                onClick={() => {
+                                  setSelectedAppointment(appointment)
+                                  setIsModalOpen(true)
+                                }}
+                                className="inline-flex items-center px-3 py-1.5 text-sm bg-night-lemon text-white hover:bg-night-lemon/90 transition-colors gap-1.5"
+                              >
+                                <Edit2 size={14} />
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDelete(appointment.id)}
+                                className="inline-flex items-center px-3 py-1.5 text-sm bg-red-600 text-white hover:bg-red-700 transition-colors gap-1.5"
+                              >
+                                <Trash2 size={14} />
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
@@ -419,15 +488,15 @@ function AdminPageContent() {
 
       case 'products':
         return (
-          <div className="p-8">
-            <div className="flex items-center justify-between mb-8">
+          <div className="p-4 lg:p-8">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
               <h1 className="text-2xl font-semibold text-night-lemon">Products</h1>
               <button
                 onClick={() => {
                   setSelectedProduct(undefined);
                   setIsProductModalOpen(true);
                 }}
-                className="bg-night-lemon text-white px-4 py-2 flex items-center gap-2 group hover:bg-night-lemon/90 transition-colors"
+                className="w-full lg:w-auto bg-night-lemon text-white px-4 py-2 flex items-center justify-center gap-2 group hover:bg-night-lemon/90 transition-colors"
               >
                 <Plus size={20} />
                 Add Product
@@ -444,7 +513,7 @@ function AdminPageContent() {
 
       case 'categories':
         return (
-          <div className="p-8">
+          <div className="p-4 lg:p-8">
             <div className="flex items-center justify-between mb-8">
               <h1 className="text-2xl font-semibold text-night-lemon">Categories</h1>
             </div>
@@ -476,19 +545,48 @@ function AdminPageContent() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50">
+      {/* Overlay para móvil cuando el sidebar está abierto */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <Sidebar currentSection={currentSection} onSectionChange={handleSectionChange} />
+      <div className={`
+        fixed inset-y-0 left-0 z-30 w-64
+        transform lg:transform-none lg:opacity-100
+        ${isSidebarOpen ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0 lg:translate-x-0'}
+        transition duration-200 ease-in-out
+      `}>
+        <Sidebar 
+          currentSection={currentSection} 
+          onSectionChange={(section) => {
+            setCurrentSection(section);
+            setIsSidebarOpen(false);
+          }} 
+        />
+      </div>
 
       {/* Contenido principal */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="lg:pl-64">
         {/* Header */}
-        <header className="bg-white border-b border-gray-200 h-16 flex items-center px-8">
-          <h1 className="text-xl font-semibold text-night-lemon">Admin Panel</h1>
+        <header className="fixed top-0 right-0 left-0 lg:left-64 bg-white border-b border-gray-200 h-16 flex items-center px-4 lg:px-8 z-10">
+          {/* Botón de menú para móvil */}
+          <button
+            onClick={() => setIsSidebarOpen(true)}
+            className="p-2 lg:hidden"
+          >
+            <Menu className="h-6 w-6 text-gray-600" />
+          </button>
+          
+          <h1 className="text-xl font-semibold text-night-lemon ml-2 lg:ml-0">Admin Panel</h1>
         </header>
 
         {/* Contenido principal con scroll */}
-        <main className="flex-1 overflow-y-auto bg-gray-50">
+        <main className="pt-16 min-h-screen">
           {renderContent()}
         </main>
       </div>
