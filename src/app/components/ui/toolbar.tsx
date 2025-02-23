@@ -79,7 +79,7 @@ export default function barraDerecha() {
               }
             `}
           >
-            <div className="space-y-4 ">
+            <div className="space-y-4 mt-16 ">
               <h3 className="text-xl font-semibold ">Welcome to Lemon</h3>
               <p className="text-sm text-gray-300">
                 Experience the perfect blend of functionality and aesthetics with our custom storage solutions. 
