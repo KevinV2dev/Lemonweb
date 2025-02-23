@@ -25,11 +25,11 @@ export const metadata: Metadata = {
   description: "We design and manufacture high-quality furniture. Specialists in custom furniture, interior design, and tailored solutions.",
   keywords: 'furniture, interior design, furniture manufacturing, custom furniture, furniture design',
   authors: [{ name: 'Lemon', url: 'mailto:lemonsimplify@gmail.com' }],
-  metadataBase: new URL('https://lemon.com'),
+  metadataBase: new URL('https://lemonutah.com'),
   openGraph: {
     title: 'Lemon - Furniture Design and Manufacturing',
     description: 'We design and manufacture high-quality furniture. Specialists in custom furniture, interior design, and tailored solutions.',
-    url: 'https://lemon.com',
+    url: 'https://lemonutah.com',
     siteName: 'Lemon',
     images: [
       {
@@ -88,7 +88,7 @@ export default function RootLayout({
             })}`,
           }}
         />
-        <link rel="canonical" href="https://lemon.com" />
+        <link rel="canonical" href="https://lemonutah.com" />
         <meta name="theme-color" content="#000000" />
         <meta name="format-detection" content="telephone=no" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
