@@ -85,105 +85,98 @@ export function EditAppointmentModal({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-night-lemon">Edit Appointment</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            <X className="w-5 h-5" />
-          </button>
+      <div className="bg-white w-full max-w-md rounded-lg flex flex-col max-h-[90vh]">
+        <div className="flex-none p-6 border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-semibold text-night-lemon">
+                {formData.address === '[Contact Form]' ? 'Edit Contact Request' : 'Edit Appointment'}
+              </h2>
+              {formData.address === '[Contact Form]' && (
+                <span className="inline-flex items-center px-2.5 py-0.5 mt-2 text-xs font-medium bg-blue-100 text-blue-800">
+                  Contact Form Message
+                </span>
+              )}
+            </div>
+            <button
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <div 
+          className="flex-1 overflow-y-auto p-6 space-y-4"
+          onWheel={(e) => {
+            if (e.target instanceof HTMLElement) {
+              const element = e.currentTarget;
+              const isScrollable = element.scrollHeight > element.clientHeight;
+              if (isScrollable) {
+                e.stopPropagation();
+              }
+            }
+          }}
+          style={{
+            scrollbarWidth: 'thin',
+            scrollbarColor: '#CBD5E0 transparent'
+          }}
+        >
           <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Name
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Client Name
             </label>
-            <input
-              type="text"
-              value={formData.client_name}
-              onChange={(e) => setFormData({...formData, client_name: e.target.value})}
-              className="mt-1 block w-full border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-night-lemon focus:border-transparent"
-              required
-            />
+            <div className="mt-1 block w-full border border-gray-200 px-3 py-2 bg-gray-50 text-gray-700">
+              {formData.client_name}
+            </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Email
             </label>
-            <input
-              type="email"
-              value={formData.client_email}
-              onChange={(e) => setFormData({...formData, client_email: e.target.value})}
-              className="mt-1 block w-full border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-night-lemon focus:border-transparent"
-              required
-            />
+            <div className="mt-1 block w-full border border-gray-200 px-3 py-2 bg-gray-50 text-gray-700">
+              {formData.client_email}
+            </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Phone
             </label>
-            <input
-              type="tel"
-              value={formData.phone}
-              onChange={(e) => {
-                const numericValue = e.target.value.replace(/[^0-9]/g, '').slice(0, 20);
-                setFormData({...formData, phone: numericValue});
-              }}
-              className="mt-1 block w-full border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-night-lemon focus:border-transparent"
-              maxLength={20}
-              required
-            />
+            <div className="mt-1 block w-full border border-gray-200 px-3 py-2 bg-gray-50 text-gray-700">
+              {formData.phone}
+            </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Preferred Contact Time
             </label>
-            <select
-              value={formData.preferred_contact_time}
-              onChange={(e) => setFormData({...formData, preferred_contact_time: e.target.value as Appointment['preferred_contact_time']})}
-              className="mt-1 block w-full border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-night-lemon focus:border-transparent"
-              required
-            >
-              <option value="morning">Morning</option>
-              <option value="afternoon">Afternoon</option>
-              <option value="evening">Evening</option>
-            </select>
+            <div className="mt-1 block w-full border border-gray-200 px-3 py-2 bg-gray-50 text-gray-700">
+              {formData.preferred_contact_time === 'morning' ? 'Morning' : 
+               formData.preferred_contact_time === 'afternoon' ? 'Afternoon' : 'Evening'}
+            </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Address
             </label>
-            <textarea
-              value={formData.address}
-              onChange={(e) => setFormData({...formData, address: e.target.value})}
-              className="mt-1 block w-full border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-night-lemon focus:border-transparent resize-none"
-              rows={2}
-              required
-            />
+            <div className="mt-1 block w-full border border-gray-200 px-3 py-2 bg-gray-50 text-gray-700">
+              {formData.address}
+            </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Status
             </label>
             <select
               value={formData.status}
-              onChange={(e) => {
-                const newStatus = e.target.value as AppointmentStatus
-                console.log('Changing status to:', newStatus)
-                setFormData(prev => ({
-                  ...prev,
-                  status: newStatus
-                }))
-              }}
-              className="mt-1 block w-full border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-night-lemon focus:border-transparent"
+              onChange={(e) => setFormData({ ...formData, status: e.target.value as 'pending' | 'completed' | 'cancelled' })}
+              className="mt-1 block w-full border border-gray-200 px-3 py-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-night-lemon focus:border-transparent"
             >
               <option value="pending">Pending</option>
               <option value="completed">Completed</option>
@@ -192,52 +185,31 @@ export function EditAppointmentModal({
           </div>
 
           <div>
-            <label htmlFor="appointment_date" className="block text-sm font-medium text-gray-700">
-              Date
-            </label>
-            <CustomDatePicker
-              selected={new Date(formData.appointment_date)}
-              onChange={(date) => {
-                if (date) {
-                  const currentDate = new Date(formData.appointment_date)
-                  date.setHours(currentDate.getHours())
-                  date.setMinutes(currentDate.getMinutes())
-                  setFormData({...formData, appointment_date: date.toISOString()})
-                }
-              }}
-              error={undefined}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Message
             </label>
-            <textarea
-              value={formData.notes || ''}
-              onChange={(e) => setFormData({...formData, notes: e.target.value})}
-              className="mt-1 block w-full border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-night-lemon focus:border-transparent overflow-y-auto"
-              rows={3}
-            />
+            <div className="mt-1 block w-full border border-gray-200 px-3 py-2 bg-gray-50 text-gray-700">
+              {formData.notes || 'No message'}
+            </div>
           </div>
+        </div>
 
-          <div className="flex justify-end space-x-3 mt-6">
+        <div className="flex-none p-6 border-t border-gray-200">
+          <div className="flex gap-4">
             <button
-              type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-gray-200 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-night-lemon"
+              className="flex-1 px-4 py-2 bg-gray-100 text-night-lemon hover:bg-gray-200 transition-colors"
             >
               Cancel
             </button>
             <button
-              type="submit"
-              disabled={isLoading}
-              className="px-4 py-2 text-sm font-medium text-white bg-night-lemon hover:bg-night-lemon/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-night-lemon disabled:opacity-50"
+              onClick={handleSubmit}
+              className="flex-1 px-4 py-2 bg-night-lemon text-white hover:bg-night-lemon/90 transition-colors"
             >
-              {isLoading ? 'Saving...' : 'Save changes'}
+              Save Changes
             </button>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   )

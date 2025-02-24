@@ -159,7 +159,7 @@ export default function Home() {
             fill
             priority
             className="
-              object-cover object-[23%_center]
+              object-cover object-[32%_center]
               hidden sm:block lg:hidden
             "
             sizes="(min-width: 640px) and (max-width: 1024px) 100vw"
@@ -167,7 +167,22 @@ export default function Home() {
             unoptimized={true}
           />
 
-          {/* Imagen desktop (≥ 1024px) */}
+          {/* Imagen desktop (1024px - 1532px) */}
+          <Image
+            src="/backgrounds/herobg.png"
+            alt="Hero background"
+            fill
+            priority
+            className="
+              object-cover object-[25%_center]
+              hidden lg:block [@media(min-width:1532px)]:hidden
+            "
+            sizes="(min-width: 1024px) and (max-width: 1532px) 100vw"
+            quality={100}
+            unoptimized={true}
+          />
+
+          {/* Imagen extra large desktop (≥1532px) */}
           <Image
             src="/backgrounds/herobg.png"
             alt="Hero background"
@@ -175,9 +190,9 @@ export default function Home() {
             priority
             className="
               object-cover object-[0%_center]
-              hidden lg:block
+              hidden [@media(min-width:1532px)]:block
             "
-            sizes="(min-width: 1024px) 100vw"
+            sizes="(min-width: 1532px) 100vw"
             quality={100}
             unoptimized={true}
           />
@@ -201,18 +216,19 @@ export default function Home() {
           flex flex-col justify-center
           mt-24 sm:mt-0
             px-4
-          pt-[120px] sm:pt-[140px]
+          pt-[120px] sm:pt-[110px]
           pb-[120px] sm:pb-[200px] lg:pb-[300px] 2xl:pb-[0px]
           relative
-          w-full
-          h-full
+          max-w-[1000px]
+          [@media(min-width:1120px)]:pt-[45px]
+          [@media(min-width:1530px)]:pt-[120px]
         ">
             <div className="flex flex-col gap-4 max-w-[1440px] mt-12">
               {/* Carrusel - Primero en móvil */}
               <motion.div 
                 className="
                   relative overflow-hidden z-0
-                  w-full max-w-[400px] sm:max-w-[600px]
+                  w-full max-w-[400px] sm:max-w-[600px] [@media(min-width:1120px)]:max-w-[750px]
                   aspect-[3/2]
                   order-1 sm:order-2
                 "
@@ -424,11 +440,10 @@ export default function Home() {
               className="space-y-6 select-none"
             >
               <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-night-lemon">
-                We create spaces for you, and only you.
+                we create spaces tailored just for you.
               </h2>
               <p className="text-silver-lemon text-lg sm:text-xl max-w-2xl mx-auto">
-                At Lemon, we have been evolving, we offer customized organizational solutions to 
-                streamline living areas at your home, giving a purpose of order and style.
+                At lemon, we design personalized organizational solutions that bring harmony, style, and functionality to your home. Our goal is to transform your spaces into a reflection of your lifestyle, making organization effortless.
               </p>
             </motion.div>
           </div>
@@ -553,16 +568,23 @@ export default function Home() {
         </section>
 
         {/* Bloque 5: Our Story */}
-        <section className="w-full py-24 bg-white">
+        <section className="w-full py-16 bg-white">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl text-center">
-            <h2 className="text-3xl sm:text-4xl font-bold text-night-lemon mb-6">
+            <h2 className="text-3xl sm:text-4xl font-bold text-night-lemon mb-2">
               Our story
             </h2>
             <p className="text-silver-lemon text-lg">
-              Lemon was born as a response to the current need to optimize space without sacrificing style. 
-              In an era where more and more people work from home, we understand the importance of creating 
-              functional, elegant spaces perfectly adapted to our clients' needs.
+              Lemon was born from a simple idea: <br />
+              Organization transforms lives. As founders, we have always believed
+              that well-organized spaces not only enchance the aesthetics of a home
+              but also bring mental clarity, efficiency, and well-being. <br />
+              Today, lemon is more than just an orgaization company. It&apos;s a movement
+              that helps people live with less clutter and more purpose. we believe that a 
+              well-designed space can transform the way we experience daily life, and we 
+              are here to make that transformation a reality.
+          
             </p>
+            <p className="text-night-lemon font-semibold text-lg">Fresh spaces, clear minds.</p>
           </div>
         </section>
 

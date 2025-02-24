@@ -15,6 +15,18 @@
   --background: #EFEFF0;
 }
 
+/* Ocultar icono predeterminado del select */
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: none !important;
+}
+
+select::-ms-expand {
+  display: none;
+}
+
 body {
   min-height: 100vh;
   overflow-x: hidden;

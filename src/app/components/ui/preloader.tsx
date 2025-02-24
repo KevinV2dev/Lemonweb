@@ -9,9 +9,9 @@ export const Preloader = () => {
       transition={{ duration: 0.5, ease: 'easeInOut' }}
       className="fixed inset-0 z-[100] bg-glass-lemon flex items-center justify-center"
     >
-      <div className="overflow-hidden h-8">
+      <div className="overflow-hidden h-8 [@media(min-width:1120px)]:h-11">
         <motion.div
-          initial={{ y: '100%' }}
+          initial={{ y: '120%' }}
           animate={{ y: 0 }}
           transition={{ 
             duration: 0.7,
@@ -25,6 +25,7 @@ export const Preloader = () => {
             width={152}
             height={32}
             priority
+            className="w-[152px] h-[32px] [@media(min-width:1120px)]:w-[198px] [@media(min-width:1120px)]:h-[42px]"
           />
         </motion.div>
       </div>

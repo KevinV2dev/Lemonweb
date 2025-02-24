@@ -69,7 +69,7 @@ export const Navbar = ({ alwaysShowBackground = false }: NavbarProps) => {
                 width={114} 
                 height={24}
                 alt="Lemon"
-                className="w-[90px] sm:w-[114px]"
+                className="w-[90px] sm:w-[114px] [@media(min-width:1120px)]:w-[148px]"
               />
             </div>
 

@@ -8,7 +8,7 @@ import { EditAppointmentModal } from './components/edit-appointment-modal'
 import { toast } from 'react-hot-toast'
 import { motion } from 'framer-motion'
 import { Sidebar } from './components/sidebar'
-import { Plus, Calendar, Users, Package, ChevronDown, Menu, Clock, Edit2, Trash2 } from 'lucide-react'
+import { Plus, Calendar, Users, Package, ChevronDown, Menu, Clock, Edit2, Trash2, Eye } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createBrowserClient } from '@/supabase/client'
 import React from 'react'
@@ -17,6 +17,8 @@ import { ProductModal } from './components/products/ProductModal'
 import type { Product } from '@/types'
 import { CategoryManager } from './components/categories/CategoryManager'
 import Image from 'next/image'
+import { ViewAppointmentModal } from './components/view-appointment-modal'
+import { StatisticsChart } from './components/dashboard/StatisticsChart'
 
 interface Appointment {
   id: string
@@ -43,6 +45,7 @@ function AdminPageContent() {
   const [isLoading, setIsLoading] = useState(true)
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false)
   const [currentSection, setCurrentSection] = useState(searchParams.get('section') || 'dashboard')
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [sortConfig, setSortConfig] = useState<{
@@ -55,6 +58,8 @@ function AdminPageContent() {
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | undefined>();
   const [shouldRefreshProducts, setShouldRefreshProducts] = useState(false);
+  const [totalProducts, setTotalProducts] = useState(0);
+  const [dateFilter, setDateFilter] = useState<'24hours' | '7days' | '30days' | '3months'>('30days');
 
   useEffect(() => {
     const checkSession = async () => {
@@ -77,6 +82,7 @@ function AdminPageContent() {
 
   useEffect(() => {
     fetchAppointments()
+    fetchTotalProducts()
   }, [])
 
   useEffect(() => {
@@ -124,6 +130,18 @@ function AdminPageContent() {
       setIsLoading(false);
     }
   }
+
+  const fetchTotalProducts = async () => {
+    try {
+      const { count } = await supabase
+        .from('products')
+        .select('*', { count: 'exact', head: true });
+      
+      setTotalProducts(count || 0);
+    } catch (error) {
+      console.error('Error fetching total products:', error);
+    }
+  };
 
   const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this appointment?')) {
@@ -275,10 +293,6 @@ function AdminPageContent() {
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
               <h1 className="text-2xl font-semibold text-night-lemon">Dashboard Overview</h1>
               <div className="flex items-center gap-4">
-                <button className="bg-night-lemon text-white px-4 py-2 flex items-center gap-2 group hover:bg-night-lemon/90 transition-colors">
-                  Last 30 Days
-                  <ChevronDown size={16} />
-                </button>
               </div>
             </div>
             
@@ -297,21 +311,47 @@ function AdminPageContent() {
               )}
               {renderDashboardCard(
                 'Total Products',
-                0,
+                totalProducts,
                 <Package className="w-6 h-6 text-night-lemon" />,
                 'text-night-lemon'
               )}
             </div>
 
             <div className="mt-8">
+              <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold text-night-lemon">Appointments Growth</h2>
+                  <div className="relative">
+                    <select
+                      value={dateFilter}
+                      onChange={(e) => setDateFilter(e.target.value as '24hours' | '7days' | '30days' | '3months')}
+                      className="px-3 py-2 pr-8 bg-white border border-gray-200 text-sm text-night-lemon focus:outline-none focus:ring-2 focus:ring-night-lemon focus:border-transparent cursor-pointer appearance-none"
+                    >
+                      <option value="24hours">Last 24 hours</option>
+                      <option value="7days">Last 7 days</option>
+                      <option value="30days">Last 30 days</option>
+                      <option value="3months">Last 3 months</option>
+                    </select>
+                    <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2">
+                      <ChevronDown className="h-4 w-4 text-night-lemon" />
+                    </div>
+                  </div>
+                </div>
+                <StatisticsChart type="appointments" dateFilter={dateFilter} />
+              </div>
+            </div>
+
+            <div className="mt-8">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-semibold text-night-lemon">Recent Appointments</h2>
-                <button 
-                  onClick={() => handleSectionChange('appointments')}
-                  className="text-night-lemon hover:text-night-lemon/80 text-sm font-medium"
-                >
-                  View all
-                </button>
+                <div className="flex items-center gap-4">
+                  <button 
+                    onClick={() => handleSectionChange('appointments')}
+                    className="text-night-lemon hover:text-night-lemon/80 text-sm font-medium"
+                  >
+                    View all
+                  </button>
+                </div>
               </div>
               
               <div className="bg-white border border-gray-200">
@@ -326,7 +366,7 @@ function AdminPageContent() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200 bg-white">
-                      {appointments.slice(0, 5).map((appointment) => (
+                      {filterAppointmentsByDate(appointments, dateFilter).slice(0, 5).map((appointment) => (
                         <tr key={appointment.id} className="hover:bg-gray-50">
                           <td className="px-3 py-4 text-sm text-night-lemon">#{appointment.appointment_id}</td>
                           <td className="px-3 py-4 text-sm text-night-lemon">{appointment.client_name}</td>
@@ -460,6 +500,16 @@ function AdminPageContent() {
                               <button
                                 onClick={() => {
                                   setSelectedAppointment(appointment)
+                                  setIsViewModalOpen(true)
+                                }}
+                                className="inline-flex items-center px-3 py-1.5 text-sm bg-gray-100 text-night-lemon hover:bg-gray-200 transition-colors gap-1.5"
+                              >
+                                <Eye size={14} />
+                                View
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setSelectedAppointment(appointment)
                                   setIsModalOpen(true)
                                 }}
                                 className="inline-flex items-center px-3 py-1.5 text-sm bg-night-lemon text-white hover:bg-night-lemon/90 transition-colors gap-1.5"
@@ -541,7 +591,20 @@ function AdminPageContent() {
     setIsProductModalOpen(false);
     setSelectedProduct(undefined);
     setShouldRefreshProducts(true);
+    await fetchTotalProducts(); // Actualizar el conteo después de guardar
     toast.success('Product saved successfully');
+  };
+
+  const filterAppointmentsByDate = (appointments: Appointment[], dateFilter: '24hours' | '7days' | '30days' | '3months') => {
+    const now = new Date();
+    const filters = {
+      '24hours': { from: new Date(now.getTime() - 24 * 60 * 60 * 1000) },
+      '7days': { from: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000) },
+      '30days': { from: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000) },
+      '3months': { from: new Date(now.getTime() - 3 * 30 * 24 * 60 * 60 * 1000) }
+    } as const;
+
+    return appointments.filter(appointment => new Date(appointment.appointment_date) >= filters[dateFilter].from);
   };
 
   return (
@@ -624,6 +687,17 @@ function AdminPageContent() {
               console.error('Error updating:', error)
               toast.error('Error updating appointment')
             }
+          }}
+        />
+      )}
+
+      {isViewModalOpen && selectedAppointment && (
+        <ViewAppointmentModal
+          appointment={selectedAppointment}
+          isOpen={isViewModalOpen}
+          onClose={() => {
+            setIsViewModalOpen(false)
+            setSelectedAppointment(null)
           }}
         />
       )}
